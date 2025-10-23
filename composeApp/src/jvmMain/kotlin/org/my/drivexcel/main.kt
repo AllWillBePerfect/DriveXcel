@@ -10,9 +10,10 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.my.drivexcel.platform.utils.WindowSizeClass
 import org.my.drivexcel.di.initKoinWithModules
+import org.my.drivexcel.platform.utils.WindowSizeClass
 import org.my.drivexcel.theme.DriveXcelAppTheme
+import java.awt.Dimension
 
 
 fun main() {
@@ -24,11 +25,13 @@ fun main() {
             title = "DriveXcel",
             state = rememberWindowState(
                 size = DpSize(
-                    width = 840.dp,
-                    height = 732.dp
+                    width = 1280.dp,
+                    height = 800.dp
                 )
-            )
+            ),
         ) {
+            window.minimumSize = Dimension(400, 400)
+
             val themeViewModel: ThemeViewModel = koinViewModel()
             val systemDark = isSystemInDarkTheme()
             val uiState by themeViewModel.userSettings.collectAsState()

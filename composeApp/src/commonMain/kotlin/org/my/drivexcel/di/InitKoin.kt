@@ -9,9 +9,14 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 import org.my.drivexcel.ThemeViewModel
+import org.my.drivexcel.data.EventDirectoryManager
 import org.my.drivexcel.data.EventsDataSource
+import org.my.drivexcel.data.FileUtils
+import org.my.drivexcel.ui.screens.addevent.AddEventViewModel
 import org.my.drivexcel.ui.screens.home.HomeViewModel
 import org.my.drivexcel.ui.screens.settings.SettingsViewModel
+import org.my.drivexcel.utils.ActionsManager
+import org.my.drivexcel.utils.LoginTypeFactory
 
 fun initKoin(
     appDeclaration: KoinAppDeclaration = {},
@@ -23,6 +28,7 @@ fun initKoin(
     modules(
         viewModelModule +
                 dataModule +
+                utilsModule +
                 platformModules
     )
     platformAction.invoke(this)
@@ -34,9 +40,17 @@ val viewModelModule = module {
 //    viewModel { ThemeViewModel(get(), get(named(AppLogger.CONSOLE_LOGGER))) }
     viewModelOf(::SettingsViewModel)
     viewModelOf(::HomeViewModel)
+    viewModelOf(::AddEventViewModel)
 }
 
 val dataModule = module {
     singleOf(EventsDataSource::Impl) { bind<EventsDataSource>() }
+    singleOf(FileUtils::Impl) { bind<FileUtils>() }
+    singleOf(EventDirectoryManager::Impl) { bind<EventDirectoryManager>() }
+}
+
+val utilsModule = module {
+    singleOf(::LoginTypeFactory)
+    singleOf(::ActionsManager)
 }
 

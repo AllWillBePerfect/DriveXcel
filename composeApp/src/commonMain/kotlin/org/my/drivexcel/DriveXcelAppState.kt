@@ -1,13 +1,17 @@
 package org.my.drivexcel
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.my.drivexcel.navigation.AppScreens
 
 @Composable
@@ -15,12 +19,16 @@ fun rememberDriveXcelAppState(
     navController: NavHostController = rememberNavController(),
     homeNavController: NavHostController = rememberNavController(),
     settingsNavController: NavHostController = rememberNavController(),
+    addEventNavController: NavHostController = rememberNavController(),
+    redactingNavController: NavHostController = rememberNavController()
 ): DriveXcelAppState {
     return remember {
         DriveXcelAppState(
             navController = navController,
             homeNavController = homeNavController,
-            settingsNavController = settingsNavController
+            settingsNavController = settingsNavController,
+            addEventNavController = addEventNavController,
+            redactingNavController = redactingNavController
         )
     }
 }
@@ -30,9 +38,14 @@ class DriveXcelAppState(
     val navController: NavHostController,
     val homeNavController: NavHostController,
     val settingsNavController: NavHostController,
+    val addEventNavController: NavHostController,
+    val redactingNavController: NavHostController
 ) {
 
-    val currentTab = mutableStateOf(AppScreens.HomeWithDetails.route)
+    var pendingEditEventId: MutableState<String?> = mutableStateOf(null)
+
+    val currentTabScreen = MutableStateFlow(AppScreens.Home)
+    var currentTabRoute by mutableStateOf(AppScreens.Home.route)
 
     private val previousDestination = mutableStateOf<NavDestination?>(null)
 
@@ -55,7 +68,9 @@ class DriveXcelAppState(
     val currentBackStackEntryFlow = navController.currentBackStackEntryFlow
 
     fun navigate(route: String) {
-        currentTab.value = route
+        currentTabRoute = route
     }
+
+
 
 }

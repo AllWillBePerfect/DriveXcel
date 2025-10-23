@@ -2,19 +2,28 @@ package org.my.drivexcel.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,13 +39,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import drivexcel.composeapp.generated.resources.Res
 import drivexcel.composeapp.generated.resources.compose_multiplatform
+import drivexcel.composeapp.generated.resources.ic_arrow_back
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.my.drivexcel.platform.datasources.UserSettings
 import org.my.drivexcel.platform.utils.BackHandlerProvider
-import org.my.drivexcel.platform.utils.WindowSize
 import org.my.drivexcel.platform.utils.WindowSizeClassPreview
+import org.my.drivexcel.platform.utils.isWide
 import org.my.drivexcel.theme.DesktopPreview
 import org.my.drivexcel.theme.DriveXcelAppTheme
 import org.my.drivexcel.theme.LocalWindowSize
@@ -59,56 +69,119 @@ fun SettingsRoute(
 
     SettingsScreen(
         uiState = uiState,
-        switchNightMode = viewModel::switchNightMode
+        switchNightMode = viewModel::switchNightMode,
+        onBackPressed = onBackPressed
     )
 }
 
 @Composable
 private fun SettingsScreen(
     uiState: SettingsViewModel.SettingsUiState,
-    switchNightMode: (UserSettings.NightMode) -> Unit
+    switchNightMode: (UserSettings.NightMode) -> Unit,
+    onBackPressed: () -> Unit
+) {
+
+    SettingsContainer(
+        onBackPressed = onBackPressed,
+        content = { innerPadding ->
+            SettingsLayout(
+                uiState = uiState,
+                innerPadding = innerPadding,
+                switchNightMode = switchNightMode
+            )
+        }
+    )
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsContainer(
+    onBackPressed: () -> Unit,
+
+    content: @Composable (
+        PaddingValues
+    ) -> Unit
 ) {
 
     val windowSize = LocalWindowSize.current
-    val isDesktopSize = windowSize == WindowSize.Expanded || windowSize == WindowSize.Medium
+    val isWide = windowSize.isWide
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                },
+                navigationIcon = {
+                    if (!isWide) {
+                        IconButton(onClick = onBackPressed) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_arrow_back),
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        content(innerPadding)
+    }
+
+}
+
+@Composable
+private fun SettingsLayout(
+    uiState: SettingsViewModel.SettingsUiState,
+    innerPadding: PaddingValues,
+    switchNightMode: (UserSettings.NightMode) -> Unit
+
+) {
+
+    val windowSize = LocalWindowSize.current
+    val isDesktopSize = windowSize.isWide
 
     val content = settingsLazyColumnContent(
         uiState = uiState,
         switchNightMode = switchNightMode
     )
 
-
+    val staggeredContent = settingsLazyStaggeredGridContent(
+        uiState = uiState,
+        switchNightMode = switchNightMode
+    )
 
     if (isDesktopSize) {
         ExpandableSettingsScreen(
-            content = content
+            content = staggeredContent,
+            innerPadding = innerPadding,
         )
     } else {
         CompactSettingsScreen(
-            content = content
+            content = content,
+            innerPadding = innerPadding
         )
     }
-
-
 }
 
 @Composable
 private fun CompactSettingsScreen(
-    content: LazyListScope.() -> Unit
-
+    content: LazyListScope.() -> Unit,
+    innerPadding: PaddingValues
 ) {
 
     Column {
-        Text(
+        /*Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 64.dp),
             text = "Настройки",
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center
-        )
+        )*/
         LazyColumn(
-            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
+            contentPadding = innerPadding,
         ) {
             content()
         }
@@ -118,30 +191,47 @@ private fun CompactSettingsScreen(
 
 @Composable
 private fun ExpandableSettingsScreen(
-    content: LazyListScope.() -> Unit
+    content: LazyStaggeredGridScope.() -> Unit,
+    innerPadding: PaddingValues
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
+        /*Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 64.dp),
             text = "Настройки",
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center
-        )
-        LazyColumn(
-            modifier = Modifier.width(600.dp),
-            contentPadding = PaddingValues(16.dp),
+        )*/
+        /*LazyColumn(
+            modifier = Modifier.width(600.dp).padding(horizontal = 16.dp),
+            contentPadding = innerPadding,
 
             ) {
+            content()
+        }*/
+
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(2),
+            modifier = Modifier.fillMaxSize(),
+            verticalItemSpacing = 12.dp,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding(),
+                start = 16.dp,
+                end = 16.dp
+            )
+        ) {
             content()
         }
     }
 }
 
+@Composable
 private fun settingsLazyColumnContent(
     uiState: SettingsViewModel.SettingsUiState,
     switchNightMode: (UserSettings.NightMode) -> Unit
@@ -167,20 +257,61 @@ private fun settingsLazyColumnContent(
             }
         }
     }
-
-
 }
 
-
 @Composable
-private fun SettingsItemSection() {
-    Text(
-        modifier = Modifier
-            .fillMaxWidth(),
-        text = "Настройки",
-        style = MaterialTheme.typography.titleMedium,
-        textAlign = TextAlign.Start
-    )
+private fun settingsLazyStaggeredGridContent(
+    uiState: SettingsViewModel.SettingsUiState,
+    switchNightMode: (UserSettings.NightMode) -> Unit
+): LazyStaggeredGridScope.() -> Unit = {
+
+    when (uiState) {
+        SettingsViewModel.SettingsUiState.Loading -> {}
+        is SettingsViewModel.SettingsUiState.Loaded -> {
+            item {
+                Column {
+                    SettingsItemSection(
+                        name = "Тема приложения"
+                    )
+                    SettingsNightModeItem(
+                        switchNightMode = switchNightMode,
+                        currentNightMode = uiState.nightMode
+                    )
+                }
+            }
+            item {
+                Column {
+                    SettingsItemSection()
+                    SettingsItemItem()
+                    SettingsItemItem()
+                    SettingsItemItem()
+                    SettingsItemItem()
+                    SettingsItemItem()
+                    SettingsItemItem()
+
+                }
+            }
+
+            item {
+                Column {
+                    SettingsItemSection()
+                    SettingsItemItem()
+                    SettingsItemItem()
+                    SettingsItemItem()
+                    SettingsItemItem()
+
+                }
+            }
+
+            item {
+                Column {
+                    SettingsItemSection()
+                    SettingsItemItem()
+                    SettingsItemItem()
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -243,96 +374,9 @@ private fun SettingsSwitchItem() {
     }
 }
 
-@Composable
-private fun SettingsNightModeItem(
-    switchNightMode: (UserSettings.NightMode) -> Unit,
-    currentNightMode: UserSettings.NightMode
-) {
 
-    var isVisible by remember { mutableStateOf(true) }
 
-    Card(
-        modifier = Modifier.padding(bottom = 8.dp),
-        onClick = {}
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .clickable { isVisible = !isVisible }
-                .padding(horizontal = 16.dp)
-                .padding(vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(Res.drawable.compose_multiplatform),
-                contentDescription = null,
-                tint = Color.Unspecified
-            )
 
-            Text(
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .weight(1f),
-                text = "Тема приложения"
-            )
-        }
-        AnimatedVisibility(
-            visible = isVisible
-        ) {
-            Column(
-                Modifier
-                    .padding(bottom = 12.dp)
-            ) {
-                RadioButtonItem(
-                    nightMode = UserSettings.NightMode.YES,
-                    isSelected = currentNightMode == UserSettings.NightMode.YES,
-                    onClick = { switchNightMode(UserSettings.NightMode.YES) }
-                )
-                RadioButtonItem(
-                    nightMode = UserSettings.NightMode.NO,
-                    isSelected = currentNightMode == UserSettings.NightMode.NO,
-                    onClick = { switchNightMode(UserSettings.NightMode.NO) }
-                )
-                RadioButtonItem(
-                    nightMode = UserSettings.NightMode.FOLLOW_SYSTEM,
-                    isSelected = currentNightMode == UserSettings.NightMode.FOLLOW_SYSTEM,
-                    onClick = { switchNightMode(UserSettings.NightMode.FOLLOW_SYSTEM) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RadioButtonItem(
-    nightMode: UserSettings.NightMode,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-
-    val text = remember {
-        when (nightMode) {
-            UserSettings.NightMode.YES -> "Темная"
-            UserSettings.NightMode.NO -> "Светлая"
-            UserSettings.NightMode.FOLLOW_SYSTEM -> "Системная"
-        }
-    }
-
-    Row(
-        modifier = Modifier
-            .clickable { onClick() }
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(selected = isSelected, onClick = onClick)
-        Text(
-            modifier = Modifier
-                .padding()
-                .weight(1f),
-            text = text
-        )
-    }
-}
 
 @PhonePreview
 @Composable
@@ -408,7 +452,8 @@ private fun SettingsScreenPreviewLightDesktop() = DriveXcelAppTheme(
 private fun SettingsScreenDefaultForPreview() {
     SettingsScreen(
         uiState = SettingsViewModel.SettingsUiState.Loaded(UserSettings.NightMode.FOLLOW_SYSTEM),
-        switchNightMode = {}
+        switchNightMode = {},
+        onBackPressed = {}
     )
 }
 
