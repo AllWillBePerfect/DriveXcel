@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,13 +34,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import drivexcel.composeapp.generated.resources.Res
 import drivexcel.composeapp.generated.resources.compose_multiplatform
+import drivexcel.composeapp.generated.resources.ic_arrow_back
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.my.drivexcel.platform.datasources.UserSettings
 import org.my.drivexcel.platform.utils.BackHandlerProvider
-import org.my.drivexcel.platform.utils.WindowSize
 import org.my.drivexcel.platform.utils.WindowSizeClassPreview
+import org.my.drivexcel.platform.utils.isWide
 import org.my.drivexcel.theme.DesktopPreview
 import org.my.drivexcel.theme.DriveXcelAppTheme
 import org.my.drivexcel.theme.LocalWindowSize
@@ -59,56 +64,114 @@ fun SettingsRoute(
 
     SettingsScreen(
         uiState = uiState,
-        switchNightMode = viewModel::switchNightMode
+        switchNightMode = viewModel::switchNightMode,
+        onBackPressed = onBackPressed
     )
 }
 
 @Composable
 private fun SettingsScreen(
     uiState: SettingsViewModel.SettingsUiState,
-    switchNightMode: (UserSettings.NightMode) -> Unit
+    switchNightMode: (UserSettings.NightMode) -> Unit,
+    onBackPressed: () -> Unit
+) {
+
+    SettingsContainer(
+        onBackPressed = onBackPressed,
+        content = { innerPadding ->
+            SettingsLayout(
+                uiState = uiState,
+                innerPadding = innerPadding,
+                switchNightMode = switchNightMode
+            )
+        }
+    )
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsContainer(
+    onBackPressed: () -> Unit,
+
+    content: @Composable (
+        PaddingValues
+    ) -> Unit
 ) {
 
     val windowSize = LocalWindowSize.current
-    val isDesktopSize = windowSize == WindowSize.Expanded || windowSize == WindowSize.Medium
+    val isWide = windowSize.isWide
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                },
+                navigationIcon = {
+                    if (!isWide) {
+                        IconButton(onClick = onBackPressed) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_arrow_back),
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        content(innerPadding)
+    }
+
+}
+
+@Composable
+private fun SettingsLayout(
+    uiState: SettingsViewModel.SettingsUiState,
+    innerPadding: PaddingValues,
+    switchNightMode: (UserSettings.NightMode) -> Unit
+
+) {
+
+    val windowSize = LocalWindowSize.current
+    val isDesktopSize = windowSize.isWide
 
     val content = settingsLazyColumnContent(
         uiState = uiState,
         switchNightMode = switchNightMode
     )
 
-
-
     if (isDesktopSize) {
         ExpandableSettingsScreen(
-            content = content
+            content = content,
+            innerPadding = innerPadding,
         )
     } else {
         CompactSettingsScreen(
-            content = content
+            content = content,
+            innerPadding = innerPadding
         )
     }
-
-
 }
 
 @Composable
 private fun CompactSettingsScreen(
-    content: LazyListScope.() -> Unit
-
+    content: LazyListScope.() -> Unit,
+    innerPadding: PaddingValues
 ) {
 
     Column {
-        Text(
+        /*Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 64.dp),
             text = "Настройки",
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center
-        )
+        )*/
         LazyColumn(
-            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
+            contentPadding = innerPadding,
         ) {
             content()
         }
@@ -118,23 +181,24 @@ private fun CompactSettingsScreen(
 
 @Composable
 private fun ExpandableSettingsScreen(
-    content: LazyListScope.() -> Unit
+    content: LazyListScope.() -> Unit,
+    innerPadding: PaddingValues
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
+        /*Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 64.dp),
             text = "Настройки",
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center
-        )
+        )*/
         LazyColumn(
-            modifier = Modifier.width(600.dp),
-            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.width(600.dp).padding(horizontal = 16.dp),
+            contentPadding = innerPadding,
 
             ) {
             content()
@@ -142,6 +206,7 @@ private fun ExpandableSettingsScreen(
     }
 }
 
+@Composable
 private fun settingsLazyColumnContent(
     uiState: SettingsViewModel.SettingsUiState,
     switchNightMode: (UserSettings.NightMode) -> Unit
@@ -408,7 +473,8 @@ private fun SettingsScreenPreviewLightDesktop() = DriveXcelAppTheme(
 private fun SettingsScreenDefaultForPreview() {
     SettingsScreen(
         uiState = SettingsViewModel.SettingsUiState.Loaded(UserSettings.NightMode.FOLLOW_SYSTEM),
-        switchNightMode = {}
+        switchNightMode = {},
+        onBackPressed = {}
     )
 }
 

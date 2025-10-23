@@ -1,85 +1,57 @@
 package org.my.drivexcel.platform.datasources
 
+
+import android.content.Context
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import org.my.drivexcel.platform.utils.AppLogger
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.file.FileSystems
-import java.nio.file.Paths
-import java.nio.file.StandardWatchEventKinds
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
 
-class DirectoriesDataSourceJvm : DirectoriesDataSource {
+//FIXME make correct implementation
+
+class DirectoriesDataSourceAndroid(
+    private val context: Context
+) : DirectoriesDataSource {
 
     private val eventsSubDir: File
 
     init {
-        val eventDir =
-            Paths.get(
-                System.getProperty(AppLogger.JVM_FOLDER_DIRECTORY),
-                AppLogger.JVM_FOLDER_DIRECTORY_NAME
-            ).toFile()
-        if (!eventDir.exists()) {
-            eventDir.mkdirs()
-        }
+        val eventDir = File(context.filesDir, "DriveXcel")
+        if (!eventDir.exists()) eventDir.mkdirs()
 
-        eventsSubDir = File(eventDir, AppLogger.JVM_EVENTS_ROOT_DIRECTORY).apply {
+        eventsSubDir = File(eventDir, "events").apply {
             if (!exists()) mkdirs()
         }
     }
 
-
-    override val events: Flow<List<EventDirectory>> = callbackFlow {
-        trySend(readAllEventDirectories())
-
-        val watchService = FileSystems.getDefault().newWatchService()
-        val path = eventsSubDir.toPath()
-        path.register(
-            watchService,
-            StandardWatchEventKinds.ENTRY_CREATE,
-            StandardWatchEventKinds.ENTRY_DELETE,
-            StandardWatchEventKinds.ENTRY_MODIFY
-        )
-
-        val job = launch(Dispatchers.IO) {
-            while (isActive) {
-                val key = watchService.take()
-                for (event in key.pollEvents()) {
-                    val kind = event.kind()
-                    if (kind == StandardWatchEventKinds.OVERFLOW) continue
-
-                    trySend(readAllEventDirectories())
-                }
-                if (!key.reset()) break
+    /**
+     * Поток всех событий. На Android нет WatchService, поэтому
+     * проверяем содержимое директории каждые 1-2 секунды.
+     */
+    override val events: Flow<List<EventDirectory>> = flow {
+        var lastEvents = emptyList<EventDirectory>()
+        while (true) {
+            val currentEvents = readAllEventDirectories()
+            if (currentEvents != lastEvents) {
+                emit(currentEvents)
+                lastEvents = currentEvents
             }
+            delay(1000L)
         }
-
-        awaitClose {
-            job.cancel()
-            watchService.close()
-        }
-    }
-        .distinctUntilChanged()
-        .conflate()
-        .flowOn(Dispatchers.IO)
-
+    }.flowOn(Dispatchers.IO)
 
     @OptIn(ExperimentalTime::class)
     override fun createEventDirectory(eventName: String, imageBytes: ByteArray?) {
@@ -100,7 +72,8 @@ class DirectoriesDataSourceJvm : DirectoriesDataSource {
             }
         }
 
-        val utcNow = Clock.System.now().toJavaInstant()
+        val utcNow = Clock.System.now()
+            .toJavaInstant()
             .atOffset(ZoneOffset.UTC)
             .format(DateTimeFormatter.ISO_INSTANT)
 
@@ -196,5 +169,4 @@ class DirectoriesDataSourceJvm : DirectoriesDataSource {
 
         return excelFile?.absolutePath
     }
-
 }

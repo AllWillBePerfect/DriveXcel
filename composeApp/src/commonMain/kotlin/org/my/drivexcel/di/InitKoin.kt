@@ -10,6 +10,7 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 import org.my.drivexcel.ThemeViewModel
 import org.my.drivexcel.data.EventsDataSource
+import org.my.drivexcel.ui.screens.addevent.AddEventViewModel
 import org.my.drivexcel.ui.screens.home.HomeViewModel
 import org.my.drivexcel.ui.screens.settings.SettingsViewModel
 
@@ -34,6 +35,7 @@ val viewModelModule = module {
 //    viewModel { ThemeViewModel(get(), get(named(AppLogger.CONSOLE_LOGGER))) }
     viewModelOf(::SettingsViewModel)
     viewModelOf(::HomeViewModel)
+    viewModelOf(::AddEventViewModel)
 }
 
 val dataModule = module {

@@ -24,8 +24,8 @@ fun main() {
             title = "DriveXcel",
             state = rememberWindowState(
                 size = DpSize(
-                    width = 840.dp,
-                    height = 732.dp
+                    width = 1280.dp,
+                    height = 800.dp
                 )
             )
         ) {

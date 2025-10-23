@@ -31,6 +31,10 @@ kotlin {
 
             implementation("androidx.window:window:1.5.0") // или новее
 
+
+
+
+
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -56,6 +60,10 @@ kotlin {
             // В зависимостях (например, в модуле, который распространяется на общую / UI часть)
             implementation("org.jetbrains.compose.material3:material3:1.9.0")
 
+            implementation("org.apache.poi:poi:5.4.1")        // для .xls
+            implementation("org.apache.poi:poi-ooxml:5.4.1")  // для .xlsx
+            implementation("org.apache.commons:commons-collections4:4.5.0") // иногда нужна для POI
+
 
 
         }
@@ -69,7 +77,7 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
 
             implementation(libs.koin.core)
-
+            
         }
     }
 }

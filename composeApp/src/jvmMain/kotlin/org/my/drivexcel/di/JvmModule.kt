@@ -4,6 +4,8 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.my.drivexcel.platform.datasources.DirectoriesDataSource
+import org.my.drivexcel.platform.datasources.DirectoriesDataSourceJvm
 import org.my.drivexcel.platform.datasources.SettingsDataSource
 import org.my.drivexcel.platform.datasources.SettingsDataSourceJvm
 import org.my.drivexcel.platform.utils.AppLogger
@@ -11,10 +13,18 @@ import org.my.drivexcel.platform.utils.AppLoggerJvm
 import org.my.drivexcel.platform.utils.AppLoggerWithLocalFileJvm
 import org.my.drivexcel.platform.utils.BackHandlerProvider
 import org.my.drivexcel.platform.utils.BackHandlerProviderJvm
+import org.my.drivexcel.platform.utils.ImageConverter
+import org.my.drivexcel.platform.utils.ImageConverterJvm
+import org.my.drivexcel.platform.utils.ImagePicker
+import org.my.drivexcel.platform.utils.ImagePickerJvm
 import org.my.drivexcel.platform.utils.PlatformProvider
 import org.my.drivexcel.platform.utils.PlatformProviderJvm
 import org.my.drivexcel.platform.utils.WindowSizeClass
 import org.my.drivexcel.platform.utils.WindowSizeClassJvm
+import org.my.drivexcel.platform.utils.XlsReader
+import org.my.drivexcel.platform.utils.XlsReaderJvm
+import org.my.drivexcel.ui.BoxDividerProviderJvm
+import org.my.drivexcel.ui.screens.home.platform.BoxDividerProvider
 
 fun initKoinWithModules() = initKoin(
     platformModules = listOf(
@@ -26,6 +36,7 @@ val jvmModule = module {
 
     // dataSources
     singleOf(::SettingsDataSourceJvm) { bind<SettingsDataSource>() }
+    singleOf(::DirectoriesDataSourceJvm) { bind<DirectoriesDataSource>() }
 
     //utils
 //    singleOf(::AppLoggerJvm) {bind<AppLogger>()}
@@ -56,4 +67,10 @@ val jvmModule = module {
     singleOf(::PlatformProviderJvm) {bind<PlatformProvider>()}
     singleOf(::WindowSizeClassJvm) {bind<WindowSizeClass>()}
     singleOf(::BackHandlerProviderJvm) {bind<BackHandlerProvider>()}
+    singleOf(::ImagePickerJvm) {bind<ImagePicker>()}
+    singleOf(::ImageConverterJvm) {bind<ImageConverter>()}
+    singleOf(::XlsReaderJvm) {bind<XlsReader>()}
+
+    //ui
+    singleOf(::BoxDividerProviderJvm) {bind<BoxDividerProvider>()}
 }

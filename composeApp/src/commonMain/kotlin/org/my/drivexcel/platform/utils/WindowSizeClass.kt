@@ -17,6 +17,7 @@ enum class WindowSize {
 }
 
 val WindowSize.isCompact get() = this == WindowSize.Compact
+val WindowSize.isWide get() = this != WindowSize.Compact
 
 class WindowSizeClassPreview(
     private val widthDp: Dp = 360.dp,
@@ -34,3 +35,6 @@ class WindowSizeClassPreview(
         }
     }
 }
+
+val phoneWindowSizeClassPreview = WindowSizeClassPreview()
+val desktopWindowSizeClassPreview = WindowSizeClassPreview(widthDp = 1280.dp, heightDp = 800.dp)

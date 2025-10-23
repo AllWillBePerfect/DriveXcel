@@ -15,12 +15,14 @@ fun rememberDriveXcelAppState(
     navController: NavHostController = rememberNavController(),
     homeNavController: NavHostController = rememberNavController(),
     settingsNavController: NavHostController = rememberNavController(),
+    addEventNavController: NavHostController = rememberNavController()
 ): DriveXcelAppState {
     return remember {
         DriveXcelAppState(
             navController = navController,
             homeNavController = homeNavController,
-            settingsNavController = settingsNavController
+            settingsNavController = settingsNavController,
+            addEventNavController = addEventNavController
         )
     }
 }
@@ -30,9 +32,10 @@ class DriveXcelAppState(
     val navController: NavHostController,
     val homeNavController: NavHostController,
     val settingsNavController: NavHostController,
+    val addEventNavController: NavHostController
 ) {
 
-    val currentTab = mutableStateOf(AppScreens.HomeWithDetails.route)
+    val currentTab = mutableStateOf(AppScreens.Home.route)
 
     private val previousDestination = mutableStateOf<NavDestination?>(null)
 
