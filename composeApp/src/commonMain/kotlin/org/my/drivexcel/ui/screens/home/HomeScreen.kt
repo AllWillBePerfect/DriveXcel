@@ -46,6 +46,7 @@ fun HomeRoute(
 
     val detailsTabsNavController = rememberNavController()
 
+
     HomeScreen(
         uiState = uiState,
         detailsTabsNavController = detailsTabsNavController,
