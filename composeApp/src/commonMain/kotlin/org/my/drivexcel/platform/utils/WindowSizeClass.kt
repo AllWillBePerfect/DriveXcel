@@ -1,6 +1,7 @@
 package org.my.drivexcel.platform.utils
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -38,3 +39,8 @@ class WindowSizeClassPreview(
 
 val phoneWindowSizeClassPreview = WindowSizeClassPreview()
 val desktopWindowSizeClassPreview = WindowSizeClassPreview(widthDp = 1280.dp, heightDp = 800.dp)
+
+// v2
+val LocalWindowSize = staticCompositionLocalOf<WindowSize> {
+    error("WindowSize not provided")
+}

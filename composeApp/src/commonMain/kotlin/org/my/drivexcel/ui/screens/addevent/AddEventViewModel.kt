@@ -7,22 +7,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.my.drivexcel.data.EventData
-import org.my.drivexcel.data.EventDirectoryManager
-import org.my.drivexcel.data.EventOpResult
+import org.my.drivexcel.data.EventDirErrors
+import org.my.drivexcel.data.EventDirectoryRepository
+import org.my.drivexcel.data.fold
+import org.my.drivexcel.domain.usecases.CreateEventUseCaseOld
 import org.my.drivexcel.platform.utils.ImageConverter
 import org.my.drivexcel.utils.ActionsManager
-import java.io.File
 
 class AddEventViewModel(
     private val imageConverter: ImageConverter,
-    private val eventDirectoryManager: EventDirectoryManager,
-    private val actionsManager: ActionsManager
+    private val eventDirectoryRepository: EventDirectoryRepository,
+    private val actionsManager: ActionsManager,
+    private val createEventUseCaseOld: CreateEventUseCaseOld
 ) : ViewModel() {
 
     private var pendingEditEventId: String? = null
@@ -68,17 +71,29 @@ class AddEventViewModel(
     fun createEventDirectory() {
         viewModelScope.launch {
             _isLoading.update { true }
-            val res = eventDirectoryManager.createEventDir(
-                newData = EventData(
+            /*val res = eventDirectoryRepository.createEventDir(
+                eventData = EventData(
                     name = _eventName.value,
                     image = _image.value
                 )
             )
-            if (res is EventOpResult.Success) {
-                actionsManager.eventCreated()
-            } else {
-                actionsManager.eventFailed(res::class.simpleName.toString())
-            }
+            res.fold(
+                onSuccess = {
+                    actionsManager.eventCreated()
+                },
+                onError = { e ->
+                    actionsManager.eventFailed(e.parseToString())
+                }
+            )*/
+            val res2 = createEventUseCaseOld.invoke(_eventName.value, _image.value)
+            res2.fold(
+                onSuccess = {
+
+                },
+                onError = {e ->
+                    actionsManager.eventFailed(e.parseToString())
+                }
+            )
             _isLoading.update { false }
         }
     }
@@ -86,18 +101,22 @@ class AddEventViewModel(
     fun redactingEventDirectory(id: String) {
         viewModelScope.launch {
             _isLoading.update { true }
-            val res = eventDirectoryManager.redactingEventDir(
+            val res = eventDirectoryRepository.changeEventDir(
                 id = id,
-                newData = EventData(
+                eventData = EventData(
                     name = _eventName.value,
                     image = _image.value
                 )
             )
-            if (res is EventOpResult.Success) {
-                actionsManager.eventChanged()
-            } else {
-                actionsManager.eventFailed(res::class.simpleName.toString())
-            }
+            res.fold(
+                onSuccess = {
+                    actionsManager.eventChanged()
+                },
+                onError = { e ->
+                    actionsManager.eventFailed(e.parseToString())
+                }
+            )
+
             _isLoading.update { false }
         }
     }
@@ -105,12 +124,15 @@ class AddEventViewModel(
     suspend fun loadSavedEventData(id: String) {
         _isLoading.update { true }
 
-        val eventDirectory = eventDirectoryManager.getEvent(id)
+//        val eventDirectory = eventDirectoryRepository.getEvent(id)
+        val eventDirectory = eventDirectoryRepository.getEventFlow(id).first()
+        println("eventDirectory: $eventDirectory")
         eventDirectory?.let { data ->
             setSavedEventData(
                 EventData(
                     name = data.name,
-                    image = data.imagePath?.let { path -> File(path).readBytes() }
+                    image = data.image?.readBytes()
+//                    image = data.imagePath?.let { path -> File(path).readBytes() }
                 )
             )
         } ?: actionsManager.eventFailed("Не получилось загрузить данные")
@@ -133,6 +155,14 @@ class AddEventViewModel(
     private fun setSavedEventData(eventData: EventData) {
         _eventName.value = eventData.name
         _image.value = eventData.image
+    }
+
+    private fun EventDirErrors.parseToString() = when (this) {
+        EventDirErrors.AlreadyExists -> "Директория уже существует"
+        EventDirErrors.CorruptedMeta -> "Не получилось прочитать meta файл"
+        EventDirErrors.InvalidName -> "Недопустимое имя"
+        EventDirErrors.NotFoundDir -> "Директория не найдена"
+        is EventDirErrors.Unhandled -> "Ошибка: ${this.exception}"
     }
 
 }

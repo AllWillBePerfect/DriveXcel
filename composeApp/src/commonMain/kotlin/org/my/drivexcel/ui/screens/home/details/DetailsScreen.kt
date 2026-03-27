@@ -28,18 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import drivexcel.composeapp.generated.resources.Res
 import drivexcel.composeapp.generated.resources.ic_arrow_back
 import org.jetbrains.compose.resources.painterResource
 import org.my.drivexcel.ui.screens.home.DetailsSubScreens
-import org.my.drivexcel.ui.screens.home.HomeViewModel
+import org.my.drivexcel.ui.screens.home.OldHomeViewModel
 import org.my.drivexcel.ui.screens.home.details.subcontainers.MergeSubContainer
 
 
 @Composable
 fun DetailsScreen(
-    uiState: HomeViewModel.HomeUiState,
+    uiState: OldHomeViewModel.HomeUiState,
     detailsTabsNavController: NavHostController,
     switchTabOnDetails: (Int) -> Unit,
     onEventClose: () -> Unit,
@@ -63,12 +62,12 @@ fun DetailsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DetailsScreenContainer(
-    uiState: HomeViewModel.HomeUiState,
+    uiState: OldHomeViewModel.HomeUiState,
     detailsTabsNavController: NavHostController,
     onEventClose: () -> Unit,
     switchTabOnDetails: (Int) -> Unit,
     content: @Composable (
-        uiState: HomeViewModel.HomeUiState.Loaded,
+        uiState: OldHomeViewModel.HomeUiState.Loaded,
         innerPadding: PaddingValues
     ) -> Unit
 ) {
@@ -76,19 +75,19 @@ private fun DetailsScreenContainer(
 
 //    var selectedDestination by rememberSaveable { mutableIntStateOf(DetailsSubScreens.Users.ordinal) }
     val selectedDestination = when (uiState) {
-        is HomeViewModel.HomeUiState.Loaded -> uiState.selectedEvent.selectedTabOnDetails
-        HomeViewModel.HomeUiState.Loading -> 0
+        is OldHomeViewModel.HomeUiState.Loaded -> uiState.selectedEvent.selectedTabOnDetails
+        OldHomeViewModel.HomeUiState.Loading -> 0
     }
 
     val appBarText =
         when (uiState) {
-            is HomeViewModel.HomeUiState.Loaded -> {
+            is OldHomeViewModel.HomeUiState.Loaded -> {
                 if (uiState.selectedEvent.isLoading) {
                     "Загрузка..."
                 } else {
                     when (uiState.selectedEvent) {
-                        is HomeViewModel.EventOnDetailsUiState.EventSelected -> uiState.selectedEvent.eventName
-                        is HomeViewModel.EventOnDetailsUiState.NoEventSelected -> "None"
+                        is OldHomeViewModel.EventOnDetailsUiState.EventSelected -> uiState.selectedEvent.eventName
+                        is OldHomeViewModel.EventOnDetailsUiState.NoEventSelected -> "None"
                     }
                 }
             }
@@ -145,7 +144,7 @@ private fun DetailsScreenContainer(
                     .wrapContentHeight()
             ) {
                 composable(DetailsSubScreens.Users.route) {
-                    if (uiState is HomeViewModel.HomeUiState.Loaded) {
+                    if (uiState is OldHomeViewModel.HomeUiState.Loaded) {
                         content(uiState, innerPadding)
                     }
                 }
@@ -177,13 +176,13 @@ private fun CenterText(text: String) {
 
 @Composable
 private fun DetailsScreenContent(
-    uiState: HomeViewModel.HomeUiState.Loaded,
+    uiState: OldHomeViewModel.HomeUiState.Loaded,
     innerPadding: PaddingValues
 ) {
 
 
     when (uiState.selectedEvent) {
-        is HomeViewModel.EventOnDetailsUiState.EventSelected -> {
+        is OldHomeViewModel.EventOnDetailsUiState.EventSelected -> {
 
             if (!uiState.selectedEvent.isLoading) {
                 if (uiState.selectedEvent.users.isNotEmpty()) {
@@ -226,7 +225,7 @@ private fun DetailsScreenContent(
 
         }
 
-        is HomeViewModel.EventOnDetailsUiState.NoEventSelected -> {
+        is OldHomeViewModel.EventOnDetailsUiState.NoEventSelected -> {
 
             Column(Modifier) {
                 Card(

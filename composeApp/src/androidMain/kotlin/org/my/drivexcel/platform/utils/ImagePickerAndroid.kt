@@ -28,7 +28,9 @@ class ImagePickerAndroid : ImagePicker {
             ActivityResultContracts.GetContent()
         ) { uri ->
             uri?.let {
-                val bytes = ctx.contentResolver.openInputStream(it)?.use { input -> input.readBytes() }
+                val bytes = ctx.contentResolver.openInputStream(uri)?.buffered()?.use {
+                    it.readBytes()
+                }
                 bytes?.let { onImageSelected(it) }
             }
         }

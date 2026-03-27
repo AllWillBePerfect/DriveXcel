@@ -14,7 +14,8 @@ import org.my.drivexcel.platform.utils.PlatformProvider
 class ThemeViewModel(
     private val settingsDataSource: SettingsDataSource,
     private val appLogger: AppLogger,
-    private val platformProvider: PlatformProvider
+    private val platformProvider: PlatformProvider,
+
 ) : ViewModel() {
 
     val us = settingsDataSource.userSettings.map { it.nightMode }
@@ -44,6 +45,10 @@ class ThemeViewModel(
                 )
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
     }
 }
 

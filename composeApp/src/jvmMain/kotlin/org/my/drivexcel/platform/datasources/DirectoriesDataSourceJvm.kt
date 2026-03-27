@@ -238,7 +238,7 @@ class DirectoriesDataSourceJvm : DirectoriesDataSource {
         ).toFile()
         eventDir.mkdirsSafe()
 
-        File(eventDir, AppLogger.JVM_LOCAL_ROOT_DIRECTORY).apply {
+        File(eventDir, AppLogger.LOCAL_ROOT_DIRECTORY).apply {
             mkdirsSafe()
         }
     }

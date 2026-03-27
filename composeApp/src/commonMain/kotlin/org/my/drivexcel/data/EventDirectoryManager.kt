@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -17,6 +19,7 @@ import org.my.drivexcel.platform.datasources.EventDirectory
 import org.my.drivexcel.platform.utils.AppLogger
 import org.my.drivexcel.platform.utils.DirectoryPathProvider
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.StandardWatchEventKinds
@@ -47,7 +50,7 @@ interface EventDirectoryManager {
             val homeDir = directoryPathProvider.provideHomePathFile().apply { mkdirsSafe() }
             File(
                 homeDir,
-                AppLogger.JVM_LOCAL_ROOT_DIRECTORY
+                AppLogger.LOCAL_ROOT_DIRECTORY
             ).apply { mkdirsSafe() }
         }
 
@@ -126,7 +129,6 @@ interface EventDirectoryManager {
 
                         //TODO переделать
                         .also { imageTypes.forEach { fileUtils.deleteFile(File(newDir, it)) } }
-
 
 
                     // --- атомарная замена ---
@@ -372,3 +374,11 @@ data class EventDirectoryMeta(
     val name: String,
     val createdAt: String
 )
+
+object EventDirectoryManagerV2 {
+
+
+
+}
+
+

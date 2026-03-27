@@ -8,24 +8,88 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.websocket.WebSockets
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.my.drivexcel.di.initKoinWithModules
 import org.my.drivexcel.platform.utils.WindowSizeClass
 import org.my.drivexcel.theme.DriveXcelAppTheme
+import org.my.drivexcel.v4.ui.navigation.App
 import java.awt.Dimension
+import java.net.Inet4Address
+import java.net.NetworkInterface
 
 
 fun main() {
+
+
     initKoinWithModules()
     application {
 
+        /*val ktorClient: KtorClientServer = GlobalContext.get().get()
+
+        // 1. Запускаем WebSocket сервер
+        startWebSocketServer(port = 5000) { deviceName, answer ->
+
+        }
+
+        // 2. Провайдер и клиент
+        val provider = ktorClient.ktorHttpPlatformProvider
+        val client = WebSocketClient(provider)
+
+        mdnsManager = MdnsManager(
+            serviceName = "JvmDesktop"
+        )
+
+        mdnsManager.start { device ->
+            println("Connecting to device: $device")
+
+            CoroutineScope(Dispatchers.IO).launch {
+                client.sendMessage(
+                    host = device.host,
+                    port = device.port,
+                    message = "Ping from Android!"
+                ) { resp ->
+                    println("Client received: $resp")
+                }
+            }
+        }*/
+
+
+        /*// 3. Запускаем mDNS сервис + поиск других устройств
+        registerMdnsService { device ->
+            println("Connecting to device via WS: $device")
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    client.sendMessage(
+                        host = device.host,
+                        port = device.port,
+                        message = "Ping from Desktop!"
+                    ) { response ->
+                        println("Client received: $response")
+                    }
+                } catch (e: Exception) {
+                    println("Failed to connect: ${e.message}")
+                }
+            }
+        }*/
+
         Window(
-            onCloseRequest = ::exitApplication,
+            onCloseRequest = {
+                exitApplication()
+            },
             title = "DriveXcel",
             state = rememberWindowState(
                 size = DpSize(
-                    width = 1280.dp,
+                    width = 400.dp,
                     height = 800.dp
                 )
             ),
@@ -47,10 +111,39 @@ fun main() {
                 darkTheme = themeSettings.isDarkMode,
                 windowSizeClass = windowSizeClass
             ) {
-                DriveXcelApp(
-                )
+//                DriveXcelApp(
+//                )
+                App()
             }
         }
+    }
+
+
+}
+
+private fun registerMdnsService(callback: (MdnsService.Device) -> Unit = {}) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val mdns = MdnsService.Builder()
+            .serviceType("_drivexcel._tcp.local.")
+            .name("JvmDesktop")
+            .port(5000)
+            .build()
+
+        val devices = mutableSetOf<MdnsService.Device>()
+
+
+// Поиск сервисов
+        mdns.start { host, port, name ->
+            val device = MdnsService.Device(host, port, name)
+            if (devices.add(device)) {
+                println("Found service: $device")
+                callback.invoke(device)
+
+            }
+        }
+
+// Остановка
+//    mdns.stop()
     }
 }
 
@@ -100,4 +193,72 @@ private fun isSystemDark(): Boolean {
     }
 }
 */
+
+class KtorHttpPlatformProviderJvm : KtorHttpPlatformProvider {
+
+    override val client: HttpClient by lazy {
+        HttpClient(CIO) {
+            install(WebSockets)
+        }
+    }
+
+    override fun createHttpClient(): HttpClient {
+        return HttpClient(CIO) {
+            install(WebSockets)
+        }
+    }
+}
+
+class MdnsManagerProviderJvm() : MdnsManagerProvider {
+    override fun provide(): MdnsManager {
+        val deviceName = try {
+            java.net.InetAddress.getLocalHost().hostName
+        } catch (e: Exception) {
+            "JvmDesktop"
+        }
+        return MdnsManager(
+            serviceName = deviceName
+        )
+    }
+}
+
+class LocalIpAddressJvm : LocalIpAddress {
+    override fun getIp(): String? {
+        return NetworkInterface.getNetworkInterfaces().toList()
+            .flatMap { it.inetAddresses.toList() }
+            .firstOrNull { it is Inet4Address && !it.isLoopbackAddress }
+            ?.hostAddress
+    }
+}
+
+class CoroutineDispatcherProviderJvm : CoroutineDispatcherProvider {
+    override fun main(): CoroutineDispatcher {
+        return Dispatchers.Main
+    }
+}
+
+class MdnsServiceBuilderProviderJvm : V2.MdnsServiceBuilderProvider {
+    override fun provide(): V2.MdnsServiceBuilder {
+        val deviceName = try {
+            java.net.InetAddress.getLocalHost().hostName
+        } catch (e: Exception) {
+            "JvmDesktop"
+        }
+        return V2.MdnsServiceBuilder().config {
+            copy(
+                name = deviceName
+            )
+        }
+    }
+}
+
+class KtorClientProviderJvm : V2.KtorClientProvider {
+
+    override val client: HttpClient by lazy {
+        HttpClient(CIO) {
+            install(WebSockets)
+        }
+    }
+
+}
 

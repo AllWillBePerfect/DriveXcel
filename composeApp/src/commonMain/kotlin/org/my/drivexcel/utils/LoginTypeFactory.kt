@@ -14,9 +14,9 @@ class LoginTypeFactory(
      * Возвращает имя директории в зависимости от текущего способа входа в приложение
      */
     fun rootDirectoryName(): String = when (loginType) {
-        LoginType.LOCAL -> AppLogger.JVM_LOCAL_ROOT_DIRECTORY
-        LoginType.GOOGLE -> AppLogger.JVM_GOOGLE_ROOT_DIRECTORY
-        LoginType.YANDEX -> AppLogger.JVM_YANDEX_ROOT_DIRECTORY
+        LoginType.LOCAL -> AppLogger.LOCAL_ROOT_DIRECTORY
+        LoginType.GOOGLE -> AppLogger.GOOGLE_ROOT_DIRECTORY
+        LoginType.YANDEX -> AppLogger.YANDEX_ROOT_DIRECTORY
     }
 
 }

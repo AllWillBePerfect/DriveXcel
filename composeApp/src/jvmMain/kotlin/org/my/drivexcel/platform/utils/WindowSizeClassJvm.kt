@@ -24,3 +24,22 @@ class WindowSizeClassJvm : WindowSizeClass {
         }
     }
 }
+
+//v2
+@Composable
+fun rememberDesktopWindowSize(): WindowSize {
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+
+    val sizePx = windowInfo.containerSize
+
+    val windowDpSize = with(density) {
+        DpSize(sizePx.width.toDp(), sizePx.height.toDp())
+    }
+
+    return when {
+        windowDpSize.width < 600.dp -> WindowSize.Compact
+        windowDpSize.width < 840.dp -> WindowSize.Medium
+        else -> WindowSize.Expanded
+    }
+}

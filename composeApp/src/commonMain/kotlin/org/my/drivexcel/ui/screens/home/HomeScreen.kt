@@ -34,7 +34,7 @@ import org.my.drivexcel.ui.screens.home.platform.BoxDividerProvider
 
 @Composable
 fun HomeRoute(
-    viewModel: HomeViewModel = koinViewModel(),
+    viewModel: OldHomeViewModel = koinViewModel(),
     backHandlerProvider: BackHandlerProvider = koinInject(),
     onEventRedacting: (String) -> Unit,
     openDrawer: () -> Unit
@@ -64,7 +64,7 @@ fun HomeRoute(
 
 @Composable
 private fun HomeScreen(
-    uiState: HomeViewModel.HomeUiState,
+    uiState: OldHomeViewModel.HomeUiState,
     detailsTabsNavController: NavHostController,
     backHandlerProvider: BackHandlerProvider,
     windowSize: WindowSize,
@@ -132,7 +132,7 @@ private fun HomeScreen(
 @Composable
 private fun HomeWithDetailsScreen(
     boxDividerProvider: BoxDividerProvider = koinInject(),
-    uiState: HomeViewModel.HomeUiState,
+    uiState: OldHomeViewModel.HomeUiState,
     detailsTabsNavController: NavHostController,
     windowSize: WindowSize,
     showAppBar: Boolean,
@@ -183,7 +183,7 @@ private fun HomeWithDetailsScreen(
                 .fillMaxHeight()
 //                .background(MaterialTheme.colorScheme.surfaceContainer)
         ) {
-            if (uiState is HomeViewModel.HomeUiState.Loaded) {
+            if (uiState is OldHomeViewModel.HomeUiState.Loaded) {
                 if (uiState.isDetailsOpen) {
                     DetailsScreen(
                         uiState = uiState,
@@ -227,17 +227,17 @@ private enum class HomeScreenType {
 @Composable
 private fun getHomeScreenType(
     isExpanded: Boolean,
-    uiState: HomeViewModel.HomeUiState
+    uiState: OldHomeViewModel.HomeUiState
 ): HomeScreenType = when (isExpanded) {
     true -> HomeScreenType.HomeWithDetails
     false -> when (uiState) {
-        is HomeViewModel.HomeUiState.Loaded -> {
+        is OldHomeViewModel.HomeUiState.Loaded -> {
             if (uiState.isDetailsOpen)
                 HomeScreenType.Details
             else HomeScreenType.Home
         }
 
-        HomeViewModel.HomeUiState.Loading -> HomeScreenType.Home
+        OldHomeViewModel.HomeUiState.Loading -> HomeScreenType.Home
     }
 }
 

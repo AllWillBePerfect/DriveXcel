@@ -37,8 +37,27 @@ import drivexcel.composeapp.generated.resources.Res
 import drivexcel.composeapp.generated.resources.ic_create_folder
 import drivexcel.composeapp.generated.resources.ic_menu
 import drivexcel.composeapp.generated.resources.ic_menu_open
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.server.application.install
+import io.ktor.server.cio.CIO
+import io.ktor.server.cio.HttpServer
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.routing.routing
+import io.ktor.server.websocket.WebSockets
+import io.ktor.server.websocket.pingPeriod
+import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.Frame
+import io.ktor.websocket.close
+import io.ktor.websocket.readText
+import io.ktor.websocket.send
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -50,9 +69,18 @@ import org.my.drivexcel.theme.LocalWindowSize
 import org.my.drivexcel.ui.screens.addevent.AddEventRoute
 import org.my.drivexcel.ui.screens.addevent.AddEventScreenFormat
 import org.my.drivexcel.ui.screens.addevent.AddEventViewModel
+import org.my.drivexcel.ui.screens.connection.ConnectionRoute
 import org.my.drivexcel.ui.screens.home.HomeRoute
 import org.my.drivexcel.ui.screens.settings.SettingsRoute
 import org.my.drivexcel.utils.ActionsManager
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.NetworkInterface
+import javax.jmdns.JmDNS
+import javax.jmdns.ServiceEvent
+import javax.jmdns.ServiceInfo
+import javax.jmdns.ServiceListener
+import kotlin.time.Duration
 
 @Composable
 @Preview
@@ -186,6 +214,7 @@ fun DriveXcelApp(
 
             DriveXcelNavigation(
                 appState = appState,
+                windowSize = windowSize,
                 openDrawer = { scope.launch { wideNavigationRailState.expand() } }
             )
         }
@@ -264,16 +293,21 @@ private fun ExpandedNavigationRail(
 }
 
 @Composable
-fun DriveXcelNavigation(appState: DriveXcelAppState, openDrawer: () -> Unit) {
+fun DriveXcelNavigation(
+    appState: DriveXcelAppState,
+    windowSize: WindowSize,
+    openDrawer: () -> Unit
+) {
 
     val addEventViewModel: AddEventViewModel = koinViewModel()
-
+    val webSocketsViewModel: WebSocketsViewModel = koinViewModel()
 
     val tabs = listOf(
         AppScreens.Home,
         AppScreens.Settings,
         AppScreens.AddEvent,
-        AppScreens.EditEvent
+        AppScreens.EditEvent,
+        AppScreens.Connection
     )
 
     // NavController для каждой вкладки
@@ -283,6 +317,7 @@ fun DriveXcelNavigation(appState: DriveXcelAppState, openDrawer: () -> Unit) {
             AppScreens.Settings to appState.settingsNavController,
             AppScreens.AddEvent to appState.addEventNavController,
             AppScreens.EditEvent to appState.redactingNavController,
+            AppScreens.Connection to appState.connectionNavController,
         )
     }
 
@@ -323,6 +358,12 @@ fun DriveXcelNavigation(appState: DriveXcelAppState, openDrawer: () -> Unit) {
                         onBackPressed = { appState.navigate(AppScreens.Home.route) },
                     )
 
+                    AppScreens.Connection -> ConnectionNavHost(
+                        webSocketsViewModel = webSocketsViewModel,
+                        navController = navController,
+                        windowSize = windowSize,
+                        onBackPressed = { appState.navigate(AppScreens.Home.route) }
+                    )
                 }
             }
         }
@@ -369,7 +410,7 @@ fun AddEventNavHost(
     NavHost(navController, startDestination = AppScreens.AddEvent.route) {
 
         composable(AppScreens.AddEvent.route) {
-            val viewModel : AddEventViewModel = koinViewModel()
+            val viewModel: AddEventViewModel = koinViewModel()
             AddEventRoute(
                 viewModel = viewModel,
                 onBackPressed = onBackPressed,
@@ -386,7 +427,6 @@ fun EditEventNavHost(
     navController: NavHostController,
     onBackPressed: () -> Unit
 ) {
-    print("i am here!")
     NavHost(navController, startDestination = AppScreens.EditEvent.route) {
         composable(
             route = AppScreens.EditEvent.route,
@@ -398,6 +438,26 @@ fun EditEventNavHost(
                 onBackPressed = onBackPressed
             )
         }
+    }
+}
+
+@Composable
+fun ConnectionNavHost(
+    webSocketsViewModel: WebSocketsViewModel,
+    navController: NavHostController,
+    windowSize: WindowSize,
+    onBackPressed: () -> Unit,
+) {
+    NavHost(navController, startDestination = AppScreens.Connection.route) {
+
+        composable(AppScreens.Connection.route) {
+            ConnectionRoute(
+                webSocketsViewModel = webSocketsViewModel,
+                windowSize = windowSize,
+                onBackPressed = onBackPressed,
+            )
+        }
+
     }
 }
 
@@ -422,8 +482,6 @@ fun EditEventNavHost(
         }
     }
 }*/
-
-
 
 
 /*@OptIn(ExperimentalAnimationApi::class)
@@ -651,3 +709,354 @@ private fun CustomSnackbar(
 data class EditEventArgs(
     val id: String
 )
+
+
+class MdnsService private constructor(
+    private val serviceType: String,
+    private val name: String,
+    private val port: Int
+) {
+
+    private var jmdns: JmDNS? = null
+
+    private fun getBindAddress(): InetAddress {
+        // Android: wlan0
+        getWifiInetAddress()?.let { return it }
+
+        println("Wi-fi not found :(")
+
+        // Desktop: нормальный local host
+        return InetAddress.getLocalHost()
+    }
+
+    fun start(callback: (host: String, port: Int, name: String) -> Unit) {
+        val addr = getBindAddress()
+        jmdns = JmDNS.create(addr)
+
+        // Регистрируем сервис
+        val serviceInfo = ServiceInfo.create(serviceType, name, port, "KMP Service")
+        jmdns?.registerService(serviceInfo)
+
+        // Слушаем сервисы других устройств
+        jmdns?.addServiceListener(serviceType, object : ServiceListener {
+            override fun serviceAdded(event: ServiceEvent?) {
+                // Запрашиваем полное info
+                jmdns?.requestServiceInfo(serviceType, event?.name)
+            }
+
+            override fun serviceRemoved(event: ServiceEvent?) {}
+
+            override fun serviceResolved(event: ServiceEvent?) {
+                val info = event?.info ?: return
+                val host = info.hostAddresses.firstOrNull() ?: return
+                callback(host, info.port, info.name)
+            }
+        })
+    }
+
+    // Остановка сервиса
+    fun stop() {
+        jmdns?.unregisterAllServices()
+        jmdns?.close()
+    }
+
+    private fun getWifiInetAddress(): InetAddress? {
+        val interfaces = NetworkInterface.getNetworkInterfaces() ?: return null
+
+        for (networkInterface in interfaces) {
+            if (!networkInterface.isUp || networkInterface.isLoopback) continue
+
+            // Wi-Fi интерфейсы на Android обычно wlan0
+            if (networkInterface.name.startsWith("wlan")) {
+                val addresses = networkInterface.inetAddresses
+                for (address in addresses) {
+                    if (!address.isLoopbackAddress && address is Inet4Address) {
+                        return address
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    // Builder для удобного создания
+    class Builder {
+        private var serviceType: String = "_drivexcel._tcp.local."
+        private var name: String = "MyDevice"
+        private var port: Int = 5000
+
+        fun serviceType(type: String) = apply { this.serviceType = type }
+        fun name(name: String) = apply { this.name = name }
+        fun port(port: Int) = apply { this.port = port }
+
+        fun build(): MdnsService {
+            return MdnsService(serviceType, name, port)
+        }
+    }
+
+    @Serializable
+    @SerialName("mdns_device")
+    data class Device(val host: String, val port: Int, val name: String) {
+        companion object {
+            fun default() = Device(
+                host = "192.168.0.100",
+                port = 5000,
+                name = "Sample device"
+            )
+        }
+    }
+
+}
+
+fun startWebSocketServer(
+    port: Int,
+    mdnsManager: MdnsManager,
+    onConnectionRequest: suspend (
+        from: MdnsService.Device,
+        respond: suspend (Boolean) -> Unit
+    ) -> Unit
+) {
+
+
+    embeddedServer(CIO, port) {
+        install(WebSockets)
+
+        routing {
+            webSocket("/chat") {
+
+                for (frame in incoming) {
+                    val text = (frame as? Frame.Text)?.readText() ?: continue
+                    val msg = Json.decodeFromString<WsMessage>(text)
+
+                    when (msg.type) {
+
+                        // ------------ REQUEST CONNECT ------------
+                        "request_connect" -> {
+
+                            // Ищем устройство среди mDNS-найденных
+
+                            println("finding devices: ${mdnsManager.getDevices()}")
+
+                            val device = mdnsManager
+                                .getDevices()
+                                .find {
+                                    println("device: $it ::: message: $msg")
+                                    it.name == msg.from.name
+                                }
+
+                            if (device == null) {
+                                println("⚠ Unknown device tried to connect: ${msg.from}")
+                                continue
+                            }
+
+                            // колбэк, который ViewModel вызовет после approve/reject
+                            val respond: suspend (Boolean) -> Unit = { approved ->
+                                val response = WsMessage(
+                                    type = if (approved) "approved" else "rejected",
+                                    from = device
+                                )
+                                outgoing.send(Frame.Text(Json.encodeToString(response)))
+                            }
+
+                            // передаём в ViewModel — теперь with Device!
+                            onConnectionRequest(device, respond)
+                        }
+                    }
+                }
+            }
+
+            /*webSocket("/chat") {
+                var deviceForSession: MdnsService.Device? = null
+                val session = ChatSession(this)
+
+                try {
+                    for (frame in incoming) {
+                        val text = (frame as? Frame.Text)?.readText() ?: continue
+                        val msg = Json.decodeFromString<WsMessage>(text)
+
+                        when (msg.type) {
+                            "request_connect" -> {
+                                val device = mdnsManager.getDevices().find { it.name == msg.from.name }
+                                if (device == null) continue
+
+                                deviceForSession = device
+
+                                // создаём callback для approve/reject
+                                val respond: suspend (Boolean) -> Unit = { approved ->
+                                    val response = WsMessage(
+                                        type = if (approved) "approved" else "rejected",
+                                        from = device
+                                    )
+                                    outgoing.send(Frame.Text(Json.encodeToString(response)))
+                                }
+
+                                // передаём в ViewModel
+                                onConnectionRequest(device, respond)
+                            }
+
+                            "chat_message" -> {
+                                // можно сюда добавить обработку приходящих сообщений
+                                println("Message from ${deviceForSession?.name}: ${msg.content}")
+                            }
+                        }
+                    }
+                } finally {
+                    // удаляем сессию при разрыве
+                    deviceForSession?.let { device ->
+                        ConnectionViewModel.chatSessions.remove(device)
+                    }
+                }
+            }*/
+
+        }
+    }.start(wait = false)
+}
+
+
+
+
+interface KtorHttpPlatformProvider {
+
+    val client: HttpClient
+
+    fun createHttpClient(): HttpClient
+}
+
+class KtorClientServer(
+    val ktorHttpPlatformProvider: KtorHttpPlatformProvider
+) {
+    suspend fun sendMessageToDevice(device: MdnsService.Device, message: String) {
+        val client = ktorHttpPlatformProvider.client
+
+        client.webSocket(
+            host = device.host,
+            port = device.port,
+            path = "/chat"
+        ) {
+            send(message)
+
+            for (frame in incoming) {
+                if (frame is Frame.Text) {
+                    println("Received: ${frame.readText()}")
+                }
+            }
+        }
+    }
+}
+
+
+
+interface MdnsManagerProvider {
+    fun provide(): MdnsManager
+}
+
+class MdnsManager(
+    private val serviceName: String = "JvmDesktop",
+    private val serviceType: String = "_drivexcel._tcp.local.",
+    private val port: Int = 5000
+) {
+
+    private var mdns: MdnsService? = null
+    private val devices = mutableSetOf<MdnsService.Device>()
+
+    /**
+     * Запускает публикацию сервиса и поиск других устройств
+     */
+    fun start(callback: (MdnsService.Device) -> Unit = {}) {
+        if (mdns != null) return // уже запущен
+
+        mdns = MdnsService.Builder()
+            .serviceType(serviceType)
+            .name(serviceName)
+            .port(port)
+            .build()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            mdns?.start { host, port, name ->
+                val device = MdnsService.Device(host, port, name)
+
+                if (devices.add(device)) {
+                        println("Found mDNS device: $device")
+                    // callback вызываем на главном потоке, если нужно UI
+                    callback(device)
+                }
+            }
+        }
+    }
+
+    /**
+     * Получить список всех найденных устройств
+     */
+    fun getDevices(): List<MdnsService.Device> = devices.toList()
+
+    /**
+     * Останавливает публикацию и поиск
+     */
+    fun stop() {
+        CoroutineScope(Dispatchers.IO).launch {
+            mdns?.stop()
+            mdns = null
+            devices.clear()
+            println("mDNS service stopped")
+        }
+    }
+}
+
+@Serializable
+data class WsMessage(
+    val type: String,       // "request_connect", "approved", "rejected", "data"
+    val from: MdnsService.Device,       // имя устройства
+    val payload: String? = null
+)
+
+
+@Serializable
+data class DevicePair(
+    val to: MdnsService.Device,
+    val from: MdnsService.Device,
+)
+
+suspend fun HttpClient.requestConnection(
+    fromDevice: MdnsService.Device,
+    toDevice: MdnsService.Device
+): Boolean {
+
+    val result = CompletableDeferred<Boolean>()
+
+    webSocket(host = toDevice.host, port = toDevice.port, path = "/chat") {
+        // 1. отправляем запрос
+        val json = Json.encodeToString(
+            WsMessage(
+                type = "request_connect",
+                from = fromDevice
+            )
+        )
+        send(json)
+
+        // 2. слушаем ответ
+        for (frame in incoming) {
+            val text = (frame as? Frame.Text)?.readText() ?: continue
+            val msg = Json.decodeFromString<WsMessage>(text)
+
+            when (msg.type) {
+                "approved" -> {
+                    result.complete(true)
+                    close() // закрываем сокет handshake
+                }
+
+                "rejected" -> {
+                    result.complete(false)
+                    close()
+                }
+            }
+        }
+    }
+
+    return result.await()
+}
+
+interface LocalIpAddress {
+    fun getIp(): String?
+}
+
+

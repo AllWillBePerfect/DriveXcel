@@ -20,7 +20,8 @@ fun rememberDriveXcelAppState(
     homeNavController: NavHostController = rememberNavController(),
     settingsNavController: NavHostController = rememberNavController(),
     addEventNavController: NavHostController = rememberNavController(),
-    redactingNavController: NavHostController = rememberNavController()
+    redactingNavController: NavHostController = rememberNavController(),
+    connectionNavController: NavHostController = rememberNavController()
 ): DriveXcelAppState {
     return remember {
         DriveXcelAppState(
@@ -28,7 +29,8 @@ fun rememberDriveXcelAppState(
             homeNavController = homeNavController,
             settingsNavController = settingsNavController,
             addEventNavController = addEventNavController,
-            redactingNavController = redactingNavController
+            redactingNavController = redactingNavController,
+            connectionNavController = connectionNavController
         )
     }
 }
@@ -39,7 +41,8 @@ class DriveXcelAppState(
     val homeNavController: NavHostController,
     val settingsNavController: NavHostController,
     val addEventNavController: NavHostController,
-    val redactingNavController: NavHostController
+    val redactingNavController: NavHostController,
+    val connectionNavController: NavHostController,
 ) {
 
     var pendingEditEventId: MutableState<String?> = mutableStateOf(null)
@@ -70,7 +73,6 @@ class DriveXcelAppState(
     fun navigate(route: String) {
         currentTabRoute = route
     }
-
 
 
 }

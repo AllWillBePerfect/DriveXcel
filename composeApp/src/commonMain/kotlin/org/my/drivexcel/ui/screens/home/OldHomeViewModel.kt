@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -15,19 +16,22 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.my.drivexcel.data.EventDirectoryManager
+import kotlinx.coroutines.withContext
+import org.my.drivexcel.data.EventDirectoryRepository
 import org.my.drivexcel.data.EventsDataSource
+import org.my.drivexcel.domain.usecases.GetEventsUseCaseOld
 import org.my.drivexcel.platform.datasources.DirectoriesDataSource
 import org.my.drivexcel.platform.utils.ImageConverter
 import org.my.drivexcel.platform.utils.LeaderUser
 import org.my.drivexcel.platform.utils.XlsReader
 
-class HomeViewModel(
+class OldHomeViewModel(
     private val eventsDataSource: EventsDataSource,
     private val directoriesDataSource: DirectoriesDataSource,
     private val xlsReader: XlsReader,
     private val imageConverter: ImageConverter,
-    private val eventDirectoryManager: EventDirectoryManager
+    private val eventDirectoryRepository: EventDirectoryRepository,
+    private val getEventsUseCaseOld: GetEventsUseCaseOld
 ) : ViewModel() {
 
     init {
@@ -47,8 +51,9 @@ class HomeViewModel(
             val users = if (selectedId == null) {
                 emptyList()
             } else {
-                val path = directoriesDataSource.findExcelFilePathByEventName(selectedId)
-                path?.let { xlsReader.readExcel(it) } ?: emptyList()
+                /*val path = directoriesDataSource.findExcelFilePathByEventName(selectedId)
+                path?.let { xlsReader.readExcel(it) } ?: emptyList()*/
+                eventDirectoryRepository.getExcelDataFlow(selectedId).first()?.users ?: emptyList()
             }
 
             viewModelState.update { it.copy(leaderUsers = users, isDetailsLoading = false) }
@@ -59,15 +64,18 @@ class HomeViewModel(
 
     val uiState: StateFlow<HomeUiState> = combine(
         viewModelState,
-        eventDirectoryManager.events,
-    ) { state, events ->
-        val homeEvents = events.map {
-            HomeEvent(
-                id = it.id,
-                name = it.name,
-                isSelected = it.id == state.selectedEventId,
-                imagePath = it.imagePath
-            )
+        eventDirectoryRepository.getEventsFlow(),
+        getEventsUseCaseOld.invoke()
+    ) { state, events, eventsAbsolute ->
+        val homeEvents = withContext(Dispatchers.IO) {
+            eventsAbsolute.map {
+                HomeEvent(
+                    id = it.id.value,
+                    name = it.meta.name,
+                    isSelected = it.id.value == state.selectedEventId,
+                    imageAbsolutePath = it.imageAbsolutePath
+                )
+            }
         }
 //        val selectedEvent = homeEvents.find { it.id == state.selectedEventId }
         state.copy(
@@ -75,7 +83,7 @@ class HomeViewModel(
         ).toUiState()
     }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
+        SharingStarted.WhileSubscribed(),
         HomeViewModelState().toUiState()
     )
 
@@ -99,7 +107,7 @@ class HomeViewModel(
     }
 
     fun onEventDelete(eventId: String) {
-        viewModelScope.launch { eventDirectoryManager.deleteEventDir(eventId) }
+        viewModelScope.launch { eventDirectoryRepository.deleteEventDir(eventId) }
     }
 
     fun switchTab(position: Int) =
@@ -108,6 +116,11 @@ class HomeViewModel(
                 selectedTabOnDetails = position
             )
         }
+
+    override fun onCleared() {
+        super.onCleared()
+        println("HomeViewModel clear")
+    }
 
 
     data class HomeViewModelState(
@@ -120,7 +133,6 @@ class HomeViewModel(
     ) {
 
         fun toUiState(): HomeUiState {
-            println("HomeViewModelState $selectedTabOnDetails")
 
             if (eventsList == null) {
                 return HomeUiState.Loading
@@ -183,13 +195,13 @@ class HomeViewModel(
                         id = "dsfsdfsdf",
                         name = "Мероприятие 1",
                         isSelected = true,
-                        imagePath = ""
+                        imageAbsolutePath = ""
                     ),
                     HomeEvent(
                         id = "dsfsdfsdfsafasdf",
                         name = "Мероприятие 2",
                         isSelected = false,
-                        imagePath = ""
+                        imageAbsolutePath = ""
                     ),
                 ),
                 isDetailsOpen = false,
@@ -221,7 +233,7 @@ class HomeViewModel(
         val id: String,
         val name: String,
         val isSelected: Boolean,
-        val imagePath: String?
+        val imageAbsolutePath: String?
     )
 
     sealed interface DetailsUsersUiState {

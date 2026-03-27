@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -23,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
@@ -41,7 +39,7 @@ import org.my.drivexcel.theme.DriveXcelAppTheme
 @Composable
 internal fun EventListItem(
     name: String,
-    imagePath: String?,
+    imageAbsolutePath: String?,
     isSelected: Boolean,
     onEventClick: () -> Unit,
     onDeleteButtonClick: () -> Unit,
@@ -63,7 +61,6 @@ internal fun EventListItem(
 
     var expanded by remember { mutableStateOf(false) }
 
-
     Box(
         modifier = Modifier.fillMaxWidth()
 //            .clip(RoundedCornerShape(8.dp))
@@ -82,8 +79,8 @@ internal fun EventListItem(
                 .fillMaxWidth().height(160.dp)
 //                .clip(RoundedCornerShape(bottomEnd = 10.dp, bottomStart = 10.dp)),
 //            model = image ?: imageResource(Res.drawable.preview)
-                    ,
-            model = imagePath,
+            ,
+            model = imageAbsolutePath,
             fallback = painterResource(Res.drawable.preview),
             contentDescription = null,
             contentScale = ContentScale.Crop
@@ -143,7 +140,7 @@ private fun EventItemNight() = DriveXcelAppTheme(
 ) {
     EventListItem(
         name = "Лекции Непомнящего",
-        imagePath = null,
+        imageAbsolutePath = null,
         isSelected = true,
         onEventClick = {},
         onDeleteButtonClick = {},
@@ -160,7 +157,7 @@ private fun EventItemLight() = DriveXcelAppTheme(
 ) {
     EventListItem(
         name = "Лекции Непомнящего",
-        imagePath = null,
+        imageAbsolutePath = null,
         isSelected = false,
         onEventClick = {},
         onDeleteButtonClick = {},

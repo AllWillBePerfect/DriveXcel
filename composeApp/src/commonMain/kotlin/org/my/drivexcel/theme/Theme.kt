@@ -11,7 +11,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import org.my.drivexcel.platform.utils.WindowSizeClass
 
-val LocalBackgroundColor = staticCompositionLocalOf { Color.Unspecified }
 
 /**
  * Темная и светлая тема приложения
@@ -58,7 +57,7 @@ private fun DriveXcelBackground(
     val color = LocalBackgroundColor.current
 
     Surface(
-        color = if (color == Color.Companion.Unspecified) Color.Companion.Transparent else color
+        color = if (color == Color.Unspecified) Color.Transparent else color
     ) {
         content()
     }

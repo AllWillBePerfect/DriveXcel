@@ -1,6 +1,5 @@
 package org.my.drivexcel.ui.screens.home.eventlist
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,12 +28,12 @@ import org.my.drivexcel.platform.utils.isCompact
 import org.my.drivexcel.platform.utils.phoneWindowSizeClassPreview
 import org.my.drivexcel.theme.DriveXcelAppTheme
 import org.my.drivexcel.theme.PhonePreview
-import org.my.drivexcel.ui.screens.home.HomeViewModel
+import org.my.drivexcel.ui.screens.home.OldHomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsListScreen(
-    uiState: HomeViewModel.HomeUiState,
+    uiState: OldHomeViewModel.HomeUiState,
     windowSize: WindowSize,
     showAppBar: Boolean,
     onEventClick: (String) -> Unit,
@@ -66,11 +65,11 @@ fun EventsListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EventsListContainer(
-    uiState: HomeViewModel.HomeUiState,
+    uiState: OldHomeViewModel.HomeUiState,
     showAppBar: Boolean,
     openDrawer: () -> Unit,
     content: @Composable (
-        uiState: HomeViewModel.HomeUiState.Loaded,
+        uiState: OldHomeViewModel.HomeUiState.Loaded,
         innerPadding: PaddingValues,
         modifier: Modifier,
     ) -> Unit
@@ -92,13 +91,13 @@ private fun EventsListContainer(
         val contentModifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
 
         when (uiState) {
-            is HomeViewModel.HomeUiState.Loaded -> content(
+            is OldHomeViewModel.HomeUiState.Loaded -> content(
                 uiState,
                 innerPadding,
                 contentModifier
             )
 
-            HomeViewModel.HomeUiState.Loading -> {
+            OldHomeViewModel.HomeUiState.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -140,7 +139,7 @@ private fun EventsListTopAppBar(
 
 @Composable
 private fun EventsListContent(
-    uiState: HomeViewModel.HomeUiState.Loaded,
+    uiState: OldHomeViewModel.HomeUiState.Loaded,
     windowSize: WindowSize,
     @Suppress("ModifierParameter") contentModifier: Modifier,
     innerPadding: PaddingValues,
@@ -179,7 +178,7 @@ private fun EventsListContent(
             EventListItem(
 //                name = "[$index] Директория: ${item.id}",
                 name = item.name,
-                imagePath = item.imagePath,
+                imageAbsolutePath = item.imageAbsolutePath,
                 isSelected = item.isSelected,
                 onEventClick = { onEventClick(item.id) },
                 onDeleteButtonClick = { onEventDelete(item.id) },
@@ -213,7 +212,7 @@ private fun EventsListScreenPreviewNight() = DriveXcelAppTheme(
 
 
     EventsListScreen(
-        uiState = HomeViewModel.HomeUiState.createHomeDefault(),
+        uiState = OldHomeViewModel.HomeUiState.createHomeDefault(),
         windowSize = WindowSize.Compact,
         showAppBar = true,
         onEventClick = {},
@@ -233,7 +232,7 @@ private fun EventsListScreenPreviewLight() = DriveXcelAppTheme(
 
 
     EventsListScreen(
-        uiState = HomeViewModel.HomeUiState.createHomeDefault(),
+        uiState = OldHomeViewModel.HomeUiState.createHomeDefault(),
         windowSize = WindowSize.Compact,
         showAppBar = true,
         onEventClick = {},

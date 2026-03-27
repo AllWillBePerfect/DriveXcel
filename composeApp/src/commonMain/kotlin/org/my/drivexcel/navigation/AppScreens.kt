@@ -3,6 +3,7 @@ package org.my.drivexcel.navigation
 import drivexcel.composeapp.generated.resources.Res
 import drivexcel.composeapp.generated.resources.compose_multiplatform
 import drivexcel.composeapp.generated.resources.ic_events_list
+import drivexcel.composeapp.generated.resources.ic_p2p
 import drivexcel.composeapp.generated.resources.ic_settings
 import org.jetbrains.compose.resources.DrawableResource
 
@@ -11,6 +12,7 @@ sealed class AppScreens(val route: String) {
     object Settings : AppScreens("settings")
     object AddEvent : AppScreens("add_event")
     object EditEvent : AppScreens("edit_event")
+    object Connection : AppScreens("connection")
 
 }
 
@@ -31,10 +33,16 @@ enum class RailScreens(
         navigateTo = AppScreens.Home.route
 
     ),
+    Connection(
+        route = "Подключения",
+        image = Res.drawable.ic_p2p,
+        navigateTo = AppScreens.Connection.route
+    ),
     Settings(
         route = "Настройки",
         image = Res.drawable.ic_settings,
         navigateTo = AppScreens.Settings.route
-    );
+    ),
+
 
 }
