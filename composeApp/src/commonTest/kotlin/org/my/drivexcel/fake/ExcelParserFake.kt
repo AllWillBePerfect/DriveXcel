@@ -1,6 +1,5 @@
 package org.my.drivexcel.fake
 
-import org.my.drivexcel.data.v3.ExcelParser
 import org.my.drivexcel.domain.models.Participant
 
 class ExcelParserFake : ExcelParser {

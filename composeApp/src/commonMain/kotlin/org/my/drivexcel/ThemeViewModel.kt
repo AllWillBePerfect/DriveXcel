@@ -5,28 +5,22 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import org.my.drivexcel.platform.datasources.SettingsDataSource
-import org.my.drivexcel.platform.datasources.UserSettings
-import org.my.drivexcel.platform.utils.AppLogger
-import org.my.drivexcel.platform.utils.PlatformProvider
+import org.my.drivexcel.platform.AppLogger
+import org.my.drivexcel.platform.PlatformProvider
+import org.my.drivexcel.base.domain.model.NightModeModel
+import org.my.drivexcel.datasource.sources.PreferencesDataSource
 
 class ThemeViewModel(
-    private val settingsDataSource: SettingsDataSource,
     private val appLogger: AppLogger,
     private val platformProvider: PlatformProvider,
+    private val preferencesDataSource: PreferencesDataSource
 
 ) : ViewModel() {
 
-    val us = settingsDataSource.userSettings.map { it.nightMode }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = UserSettings.NightMode.FOLLOW_SYSTEM,
-            started = SharingStarted.WhileSubscribed(5_000)
+    val userSettings = preferencesDataSource.nightModeModelFlow.map {
+        AppUiState.Success(
+            nightMode = it
         )
-
-    val userSettings = settingsDataSource.userSettings.map {
-        AppUiState.Success(userSettings = it)
     }.stateIn(
         scope = viewModelScope,
         initialValue = AppUiState.Loading,
@@ -37,29 +31,16 @@ class ThemeViewModel(
         appLogger.d("ThemeViewModel", "init ${platformProvider.currentPlatform()}")
     }
 
-    fun switchNightTheme(nightMode: UserSettings.NightMode) {
-        viewModelScope.launch {
-            settingsDataSource.update { settings ->
-                settings.copy(
-                    nightMode = nightMode
-                )
-            }
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-    }
 }
 
 sealed class AppUiState {
     object Loading : AppUiState()
-    data class Success(val userSettings: UserSettings) : AppUiState() {
+    data class Success(val nightMode: NightModeModel) : AppUiState() {
         override fun shouldUseDarkTheme(isSystemDarkTheme: Boolean) =
-            when (userSettings.nightMode) {
-                UserSettings.NightMode.YES -> true
-                UserSettings.NightMode.NO -> false
-                UserSettings.NightMode.FOLLOW_SYSTEM -> isSystemDarkTheme
+            when (nightMode) {
+                NightModeModel.NIGHT -> true
+                NightModeModel.DAY -> false
+                NightModeModel.FOLLOW_SYSTEM -> isSystemDarkTheme
             }
     }
 

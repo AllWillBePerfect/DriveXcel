@@ -103,6 +103,12 @@ kotlin {
 
             implementation(compose.materialIconsExtended)
 
+            implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.2.0")
+            implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.9.0")
+            implementation("org.jetbrains.compose.material3:material3-window-size-class:1.9.0")
+
+            implementation("androidx.datastore:datastore-preferences:1.2.1")
+            implementation("androidx.datastore:datastore-core:1.2.1")
 
         }
         commonTest.dependencies {

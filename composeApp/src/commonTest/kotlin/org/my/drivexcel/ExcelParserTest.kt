@@ -2,7 +2,6 @@ package org.my.drivexcel
 
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
-import org.my.drivexcel.data.v3.ExcelParser
 import org.my.drivexcel.domain.models.Participant
 import org.my.drivexcel.domain.models.ParticipantId
 import kotlin.test.BeforeTest

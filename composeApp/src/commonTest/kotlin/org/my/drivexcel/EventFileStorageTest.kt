@@ -1,19 +1,5 @@
 package org.my.drivexcel
 
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.test.runTest
-import org.my.drivexcel.data.v3.EventFileStore
-import org.my.drivexcel.data.v3.RootDirPathProvider
-import java.nio.file.Files
-import java.nio.file.Paths
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
-
 /*
 class EventFileStorageTest {
 

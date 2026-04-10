@@ -1,28 +1,5 @@
 package org.my.drivexcel
 
-import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
-import org.my.drivexcel.data.v3.EventFileStore
-import org.my.drivexcel.data.v3.EventPathResolver
-import org.my.drivexcel.data.v3.FolderIdProvider
-import org.my.drivexcel.data.v3.TimeProvider
-import org.my.drivexcel.data.v3.repositories.EventRepositoryImpl
-import org.my.drivexcel.domain.models.EventId
-import org.my.drivexcel.domain.models.EventImage
-import org.my.drivexcel.domain.models.EventMeta
-import org.my.drivexcel.domain.models.ImageExtension
-import org.my.drivexcel.domain.repositories.EventRepository
-import org.my.drivexcel.fake.EventFileStoreFake
-import org.my.drivexcel.fake.ExcelParserFake
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
-
 /*
 class EventRepositoryTest {
 

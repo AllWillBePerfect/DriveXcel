@@ -1,6 +1,7 @@
 package org.my.drivexcel.platform.utils
 
 import android.util.Log
+import org.my.drivexcel.platform.AppLogger
 
 class AppLoggerAndroid : AppLogger {
 

@@ -1,84 +1,73 @@
 package org.my.drivexcel.ui.screens.settings
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.material3.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import drivexcel.composeapp.generated.resources.Res
-import drivexcel.composeapp.generated.resources.compose_multiplatform
-import drivexcel.composeapp.generated.resources.ic_arrow_back
-import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
-import org.my.drivexcel.platform.datasources.UserSettings
-import org.my.drivexcel.platform.utils.BackHandlerProvider
-import org.my.drivexcel.platform.utils.WindowSizeClassPreview
-import org.my.drivexcel.platform.utils.isWide
-import org.my.drivexcel.theme.DesktopPreview
-import org.my.drivexcel.theme.DriveXcelAppTheme
-import org.my.drivexcel.theme.LocalWindowSize
-import org.my.drivexcel.theme.PhonePreview
-import org.my.drivexcel.theme.TabletPreview
+import org.my.drivexcel.base.domain.model.NightModeModel
+import org.my.drivexcel.ui.components.CenteredContainerComponent
 
 @Composable
 fun SettingsRoute(
     viewModel: SettingsViewModel = koinViewModel(),
-    backHandlerProvider: BackHandlerProvider = koinInject(),
-    onBackPressed: () -> Unit
+    onUnauthorizeButtonClicked: () -> Unit
 ) {
 
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    backHandlerProvider.BackHandler {
-        onBackPressed()
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                SettingsUiEvent.NavigateToLoginGraph -> onUnauthorizeButtonClicked()
+            }
+        }
     }
-
 
     SettingsScreen(
         uiState = uiState,
-        switchNightMode = viewModel::switchNightMode,
-        onBackPressed = onBackPressed
+        onAction = viewModel::onAction
     )
 }
 
 @Composable
 private fun SettingsScreen(
-    uiState: SettingsViewModel.SettingsUiState,
-    switchNightMode: (UserSettings.NightMode) -> Unit,
-    onBackPressed: () -> Unit
+    uiState: SettingsUiState,
+    onAction: (SettingsUiAction) -> Unit
 ) {
-
-    SettingsContainer(
-        onBackPressed = onBackPressed,
+    SettingsWrapper(
         content = { innerPadding ->
-            SettingsLayout(
-                uiState = uiState,
+            SettingsContent(
                 innerPadding = innerPadding,
-                switchNightMode = switchNightMode
+                uiState = uiState,
+                onAction = onAction
             )
         }
     )
@@ -87,367 +76,297 @@ private fun SettingsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsContainer(
-    onBackPressed: () -> Unit,
-
-    content: @Composable (
-        PaddingValues
-    ) -> Unit
+private fun SettingsWrapper(
+    content: @Composable (PaddingValues) -> Unit
 ) {
-
-    val windowSize = LocalWindowSize.current
-    val isWide = windowSize.isWide
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                },
-                navigationIcon = {
-                    if (!isWide) {
-                        IconButton(onClick = onBackPressed) {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_arrow_back),
-                                contentDescription = null
-                            )
-                        }
-                    }
+                    Text(
+                        text = "Настройки"
+                    )
                 }
             )
         }
     ) { innerPadding ->
         content(innerPadding)
     }
-
 }
 
 @Composable
-private fun SettingsLayout(
-    uiState: SettingsViewModel.SettingsUiState,
+private fun SettingsContent(
     innerPadding: PaddingValues,
-    switchNightMode: (UserSettings.NightMode) -> Unit
-
+    uiState: SettingsUiState,
+    onAction: (SettingsUiAction) -> Unit
 ) {
-
-    val windowSize = LocalWindowSize.current
-    val isDesktopSize = windowSize.isWide
-
-    val content = settingsLazyColumnContent(
-        uiState = uiState,
-        switchNightMode = switchNightMode
-    )
-
-    val staggeredContent = settingsLazyStaggeredGridContent(
-        uiState = uiState,
-        switchNightMode = switchNightMode
-    )
-
-    if (isDesktopSize) {
-        ExpandableSettingsScreen(
-            content = staggeredContent,
-            innerPadding = innerPadding,
-        )
-    } else {
-        CompactSettingsScreen(
-            content = content,
-            innerPadding = innerPadding
-        )
-    }
-}
-
-@Composable
-private fun CompactSettingsScreen(
-    content: LazyListScope.() -> Unit,
-    innerPadding: PaddingValues
-) {
-
-    Column {
-        /*Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 64.dp),
-            text = "Настройки",
-            style = MaterialTheme.typography.headlineLarge,
-            textAlign = TextAlign.Center
-        )*/
-        LazyColumn(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            contentPadding = innerPadding,
+    CenteredContainerComponent {
+        Column(
+            modifier = Modifier.padding(innerPadding)
         ) {
-            content()
+            LazyColumn {
+                settingsSection("Тема приложения") {
+                    SectionItemNightMode(
+                        nightModeModel = NightModeModel.NIGHT,
+                        currentNightModeModel = uiState.nightModeModel,
+                        onItemClick = { onAction(SettingsUiAction.SwitchNightMode(it)) }
+                    )
+                    SectionItemNightMode(
+                        nightModeModel = NightModeModel.DAY,
+                        currentNightModeModel = uiState.nightModeModel,
+                        onItemClick = { onAction(SettingsUiAction.SwitchNightMode(it)) }
+                    )
+                    SectionItemNightMode(
+                        nightModeModel = NightModeModel.FOLLOW_SYSTEM,
+                        currentNightModeModel = uiState.nightModeModel,
+                        onItemClick = { onAction(SettingsUiAction.SwitchNightMode(it)) }
+                    )
+                }
+
+                settingsSection {
+
+                    SectionItemWithIcon(
+                        item = "Exit",
+                        onClick = { onAction(SettingsUiAction.UnauthorizeUser) },
+                        title = { "Перейти на начальный экран" },
+                        icon = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Logout,
+                                null
+                            )
+                        }
+                    )
+                }
+            }
         }
     }
 
 }
 
-@Composable
-private fun ExpandableSettingsScreen(
-    content: LazyStaggeredGridScope.() -> Unit,
-    innerPadding: PaddingValues
+private fun LazyListScope.settingsSection(
+    title: String = "",
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        /*Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 64.dp),
-            text = "Настройки",
-            style = MaterialTheme.typography.headlineLarge,
-            textAlign = TextAlign.Center
-        )*/
-        /*LazyColumn(
-            modifier = Modifier.width(600.dp).padding(horizontal = 16.dp),
-            contentPadding = innerPadding,
-
-            ) {
-            content()
-        }*/
-
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize(),
-            verticalItemSpacing = 12.dp,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding(),
-                bottom = innerPadding.calculateBottomPadding(),
-                start = 16.dp,
-                end = 16.dp
+    item {
+        Column {
+            Text(
+                text = title,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.titleMedium
             )
-        ) {
-            content()
+
+            SectionContainer {
+                content()
+            }
         }
     }
 }
 
 @Composable
-private fun settingsLazyColumnContent(
-    uiState: SettingsViewModel.SettingsUiState,
-    switchNightMode: (UserSettings.NightMode) -> Unit
-): LazyListScope.() -> Unit = {
+private fun SectionContainer(
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val shape = RoundedCornerShape(12.dp)
 
-    when (uiState) {
-        SettingsViewModel.SettingsUiState.Loading -> {}
-        is SettingsViewModel.SettingsUiState.Loaded -> {
-            item {
-                SettingsNightModeItem(
-                    switchNightMode = switchNightMode,
-                    currentNightMode = uiState.nightMode
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                shape = shape
+            )
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun <T> SectionItemWithIcon(
+    item: T,
+    onClick: (T) -> Unit,
+    title: (T) -> String,
+    icon: @Composable (T) -> Unit,
+    modifier: Modifier = Modifier,
+    showDivider: Boolean = true
+) {
+    Column(modifier) {
+        ListItem(
+            colors = ListItemDefaults.colors().copy(containerColor = Color.Transparent),
+            modifier = Modifier
+                .clickable { onClick(item) },
+            headlineContent = {
+                Text(title(item))
+            },
+            leadingContent = {
+                icon(item)
+            }
+        )
+
+        if (showDivider) {
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest
+            )
+        }
+    }
+}
+
+@Composable
+private fun SectionItemNightMode(
+    nightModeModel: NightModeModel,
+    currentNightModeModel: NightModeModel,
+    onItemClick: (NightModeModel) -> Unit,
+    showDivider: Boolean = true
+) {
+    val isCurrentItem = currentNightModeModel == nightModeModel
+    Column {
+        ListItem(
+            colors = ListItemDefaults.colors().copy(containerColor = Color.Transparent),
+            modifier = Modifier
+                .clickable { onItemClick(nightModeModel) },
+            headlineContent = { Text(nightModeModel.toName()) },
+            trailingContent = {
+                Switch(
+                    checked = isCurrentItem,
+                    onCheckedChange = null
                 )
             }
-            item { SettingsItemSection() }
-            item { SettingsItemItem() }
-            item { SettingsItemItem() }
-            item { SettingsItemSection() }
-            item { SettingsItemItem() }
-            item { SettingsItemItem() }
-            items(20) {
-                SettingsItemItem()
-            }
-        }
-    }
-}
-
-@Composable
-private fun settingsLazyStaggeredGridContent(
-    uiState: SettingsViewModel.SettingsUiState,
-    switchNightMode: (UserSettings.NightMode) -> Unit
-): LazyStaggeredGridScope.() -> Unit = {
-
-    when (uiState) {
-        SettingsViewModel.SettingsUiState.Loading -> {}
-        is SettingsViewModel.SettingsUiState.Loaded -> {
-            item {
-                Column {
-                    SettingsItemSection(
-                        name = "Тема приложения"
-                    )
-                    SettingsNightModeItem(
-                        switchNightMode = switchNightMode,
-                        currentNightMode = uiState.nightMode
-                    )
-                }
-            }
-            item {
-                Column {
-                    SettingsItemSection()
-                    SettingsItemItem()
-                    SettingsItemItem()
-                    SettingsItemItem()
-                    SettingsItemItem()
-                    SettingsItemItem()
-                    SettingsItemItem()
-
-                }
-            }
-
-            item {
-                Column {
-                    SettingsItemSection()
-                    SettingsItemItem()
-                    SettingsItemItem()
-                    SettingsItemItem()
-                    SettingsItemItem()
-
-                }
-            }
-
-            item {
-                Column {
-                    SettingsItemSection()
-                    SettingsItemItem()
-                    SettingsItemItem()
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsItemItem() {
-    Card(
-        modifier = Modifier.padding(bottom = 8.dp),
-        onClick = {}
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(vertical = 16.dp)
-        ) {
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(Res.drawable.compose_multiplatform),
-                contentDescription = null,
-                tint = Color.Unspecified
-            )
-
-
-            Text(
+        )
+        if (showDivider) {
+            HorizontalDivider(
                 modifier = Modifier.padding(start = 16.dp),
-                text = "Настройки"
+                color = MaterialTheme.colorScheme.surfaceContainerHighest
             )
         }
     }
 }
 
 @Composable
-private fun SettingsSwitchItem() {
-    Card(
-        modifier = Modifier.padding(bottom = 8.dp),
-        onClick = {}
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(Res.drawable.compose_multiplatform),
-                contentDescription = null,
-                tint = Color.Unspecified
-            )
+private fun <T> SectionSwitchItem(
+    item: T,
+    selectedItem: T,
+    onItemClick: (T) -> Unit,
+    title: (T) -> String,
+    showDivider: Boolean = true
+) {
+    val isSelected = item == selectedItem
 
+    Column {
+        ListItem(
+            colors = ListItemDefaults.colors().copy(containerColor = Color.Transparent),
+            modifier = Modifier
+                .clickable { onItemClick(item) },
+            headlineContent = {
+                Text(title(item))
+            },
+            trailingContent = {
+                Switch(
+                    checked = isSelected,
+                    onCheckedChange = null
+                )
+            }
+        )
 
-            Text(
-                modifier = Modifier.padding(start = 16.dp).weight(1f),
-                text = "Тема приложения"
-            )
-
-            Switch(
-                checked = true,
-                onCheckedChange = {}
+        if (showDivider) {
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest
             )
         }
     }
 }
 
-
-
-
-
-@PhonePreview
-@Composable
-private fun SettingsScreenPreviewNightPhone() = DriveXcelAppTheme(
-    darkTheme = true,
-    windowSizeClass = WindowSizeClassPreview()
+/*private fun LazyListScope.settingsSection(
+    title: String,
+    items: List<@Composable (Modifier) -> Unit>
 ) {
-    SettingsScreenDefaultForPreview()
+    item {
+        Text(text = title)
+    }
+
+    itemsIndexed(items) { index, itemContent ->
+
+        val position = when {
+            items.size == 1 -> SectionItemPosition.SINGLE
+            index == 0 -> SectionItemPosition.TOP
+            index == items.lastIndex -> SectionItemPosition.BOTTOM
+            else -> SectionItemPosition.MIDDLE
+        }
+
+        SectionItem(position) { modifier ->
+            itemContent(modifier)
+        }
+    }
 }
 
-@PhonePreview
 @Composable
-private fun SettingsScreenPreviewLightPhone() = DriveXcelAppTheme(
-    darkTheme = false,
-    windowSizeClass = WindowSizeClassPreview()
-
+private fun SectionItem(
+    position: SectionItemPosition,
+    content: @Composable (Modifier) -> Unit
 ) {
-    SettingsScreenDefaultForPreview()
-}
+    val shape = when (position) {
+        SectionItemPosition.SINGLE -> RoundedCornerShape(12.dp)
+        SectionItemPosition.TOP -> RoundedCornerShape(12.dp, 12.dp, 0.dp, 0.dp)
+        SectionItemPosition.MIDDLE -> RoundedCornerShape(0.dp)
+        SectionItemPosition.BOTTOM -> RoundedCornerShape(0.dp, 0.dp, 12.dp, 12.dp)
+    }
 
-@TabletPreview
-@Composable
-private fun SettingsScreenPreviewNightTablet() = DriveXcelAppTheme(
-    darkTheme = true,
-    windowSizeClass = WindowSizeClassPreview(
-        widthDp = 840.dp,
-        heightDp = 800.dp
+    val borderColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val strokeWidth = 1.dp
+
+    content(
+        Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                shape = shape
+            )
+            .drawBehind {
+                val stroke = strokeWidth.toPx()
+
+                // верхняя линия
+                if (position == SectionItemPosition.TOP || position == SectionItemPosition.SINGLE) {
+                    drawLine(
+                        color = borderColor,
+                        start = Offset(0f, 0f),
+                        end = Offset(size.width, 0f),
+                        strokeWidth = stroke
+                    )
+                }
+
+                // нижняя линия
+                if (position == SectionItemPosition.BOTTOM || position == SectionItemPosition.SINGLE) {
+                    drawLine(
+                        color = borderColor,
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = stroke
+                    )
+                }
+
+                // левая линия
+                drawLine(
+                    color = borderColor,
+                    start = Offset(0f, 0f),
+                    end = Offset(0f, size.height),
+                    strokeWidth = stroke
+                )
+
+                // правая линия
+                drawLine(
+                    color = borderColor,
+                    start = Offset(size.width, 0f),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = stroke
+                )
+            }
     )
-) {
-    SettingsScreenDefaultForPreview()
+}*/
+enum class SectionItemPosition {
+    SINGLE, TOP, MIDDLE, BOTTOM
 }
-
-@TabletPreview
-@Composable
-private fun SettingsScreenPreviewLightTablet() = DriveXcelAppTheme(
-    darkTheme = false,
-    windowSizeClass = WindowSizeClassPreview(
-        widthDp = 840.dp,
-        heightDp = 800.dp
-    )
-
-) {
-    SettingsScreenDefaultForPreview()
-}
-
-
-@DesktopPreview
-@Composable
-private fun SettingsScreenPreviewNightDesktop() = DriveXcelAppTheme(
-    darkTheme = true,
-    windowSizeClass = WindowSizeClassPreview(
-        widthDp = 1280.dp,
-        heightDp = 800.dp
-    )
-) {
-    SettingsScreenDefaultForPreview()
-}
-
-@DesktopPreview
-@Composable
-private fun SettingsScreenPreviewLightDesktop() = DriveXcelAppTheme(
-    darkTheme = false,
-    windowSizeClass = WindowSizeClassPreview(
-        widthDp = 1280.dp,
-        heightDp = 800.dp
-    )
-
-) {
-    SettingsScreenDefaultForPreview()
-}
-
-@Composable
-private fun SettingsScreenDefaultForPreview() {
-    SettingsScreen(
-        uiState = SettingsViewModel.SettingsUiState.Loaded(UserSettings.NightMode.FOLLOW_SYSTEM),
-        switchNightMode = {},
-        onBackPressed = {}
-    )
-}
-
-
-
-

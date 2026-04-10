@@ -1,19 +1,10 @@
 package org.my.drivexcel.mock.unit.domain.usecase
 
 import io.mockk.MockKAnnotations
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.coVerifyOrder
 import io.mockk.impl.annotations.MockK
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.my.drivexcel.v4.domain.exception.CreateEventDomainException
-import org.my.drivexcel.v4.domain.model.EventDomainModel
 import org.my.drivexcel.v4.domain.usecase.CreateEventRepository
-import org.my.drivexcel.v4.domain.usecase.CreateEventUseCase
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import org.my.drivexcel.domain.usecase.CreateEventUseCase
 
 class CreateEventUseCaseTest {
 

@@ -7,16 +7,16 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.my.drivexcel.data.v3.FolderIdProvider
-import org.my.drivexcel.data.v3.RootDirPathProvider
-import org.my.drivexcel.domain.models.EventImage
-import org.my.drivexcel.domain.models.ImageExtension
+import org.my.drivexcel.platform.FolderIdProvider
+import org.my.drivexcel.platform.RootDirPathProvider
+import org.my.drivexcel.domain.model.EventImageDomainModel
+import org.my.drivexcel.domain.model.ImageExtension
 import org.my.drivexcel.integration.utils.TestFileUtils.getFilesAndDirs
-import org.my.drivexcel.v4.base.infractructure.filestorage.LocalStorageProvider
-import org.my.drivexcel.v4.base.infractructure.filestorage.StorageProvider
-import org.my.drivexcel.v4.data.SerializableParser
-import org.my.drivexcel.v4.data.models.MetaDataModel
-import org.my.drivexcel.v4.datasource.sources.EventFileDataSource
+import org.my.drivexcel.base.infractructure.filestorage.LocalStorageProvider
+import org.my.drivexcel.base.infractructure.filestorage.StorageProvider
+import org.my.drivexcel.data.SerializableParser
+import org.my.drivexcel.data.models.MetaDataModel
+import org.my.drivexcel.datasource.sources.EventFileDataSource
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.BeforeTest
@@ -81,7 +81,7 @@ class EventFileDataSourceTest {
         //Given
         val eventName = "first event"
         val expectedImageBytes = ByteArray(10) {it.toByte()}
-        val image = EventImage(expectedImageBytes, ImageExtension.PNG)
+        val image = EventImageDomainModel(expectedImageBytes, ImageExtension.PNG)
 
         //When
         val id = classUnderTest.createEvent(eventName, image)
@@ -116,7 +116,7 @@ class EventFileDataSourceTest {
     @Test
     fun `Given JPG image When createEvent Then saves jpg image`() = runTest {
         val imageBytes = ByteArray(5) { it.toByte() }
-        val image = EventImage(imageBytes, ImageExtension.JPEG)
+        val image = EventImageDomainModel(imageBytes, ImageExtension.JPEG)
 
         val id = classUnderTest.createEvent("event", image)
 
@@ -128,10 +128,10 @@ class EventFileDataSourceTest {
     @Test
     fun `Given PNG image When updateEvent with JPG Then replaces image`() = runTest {
 
-        val pngImage = EventImage(ByteArray(5) {1}, ImageExtension.PNG)
+        val pngImage = EventImageDomainModel(ByteArray(5) {1}, ImageExtension.PNG)
         val id = classUnderTest.createEvent("event", pngImage)
 
-        val jpgImage = EventImage(ByteArray(5) {2}, ImageExtension.JPEG)
+        val jpgImage = EventImageDomainModel(ByteArray(5) {2}, ImageExtension.JPEG)
 
         classUnderTest.updateEvent(id, "event", jpgImage)
 
@@ -186,7 +186,7 @@ class SomeTest(
     @Test
     fun `Given JPG image When createEvent Then saves jpg image`() = runTest {
         val imageBytes = ByteArray(5) { it.toByte() }
-        val image = EventImage(imageBytes, imageExtension)
+        val image = EventImageDomainModel(imageBytes, imageExtension)
 
         val id = classUnderTest.createEvent("event", image)
 
@@ -199,7 +199,7 @@ class SomeTest(
     fun `Given image When createEvent Then saves image with correct extension`() = runTest {
 
         val imageBytes = ByteArray(5) { it.toByte() }
-        val image = EventImage(imageBytes, imageExtension)
+        val image = EventImageDomainModel(imageBytes, imageExtension)
 
         val id = classUnderTest.createEvent("event", image)
 

@@ -1,9 +1,9 @@
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Rule
-import org.my.drivexcel.platform.utils.phoneWindowSizeClassPreview
-import org.my.drivexcel.theme.DriveXcelAppTheme
-import org.my.drivexcel.v4.ui.screens.home.HomeRoute
+import org.my.drivexcel.platform.phoneWindowSizeClassPreview
+import org.my.drivexcel.ui.theme.DriveXcelAppTheme
+import org.my.drivexcel.ui.screens.home.HomeRoute
 import kotlin.test.Test
 
 class AndroidDemoUiTest {
@@ -15,7 +15,7 @@ class AndroidDemoUiTest {
     fun startTest() {
         composeTestRule.setContent {
             DriveXcelAppTheme(
-                windowSizeClass = phoneWindowSizeClassPreview
+                myWindowSizeClass = phoneWindowSizeClassPreview
             ) {
                 HomeRoute(onCreateEvent = { }, onUpdateEvent = { })
             }
