@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.my.drivexcel.ui.theme.DriveXcelAppTheme
-import org.my.drivexcel.ui.utils.nav.windowSizeClassPreviewProvider
+import org.my.drivexcel.ui.utils.nav.phoneWindowSizeClassPreviewProvider
 import org.my.drivexcel.platform.phoneWindowSizeClassPreview
 
 
@@ -70,7 +70,7 @@ private fun DefaultPreviewItem() = AlertDialogComponent(
 private fun PreviewNight() = DriveXcelAppTheme(
     darkTheme = true,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     DefaultPreviewItem()
@@ -81,7 +81,7 @@ private fun PreviewNight() = DriveXcelAppTheme(
 private fun PreviewLight() = DriveXcelAppTheme(
     darkTheme = false,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     DefaultPreviewItem()

@@ -38,7 +38,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.my.drivexcel.platform.phoneWindowSizeClassPreview
 import org.my.drivexcel.ui.theme.DriveXcelAppTheme
 import org.my.drivexcel.domain.model.LeaderUserDomainModel
-import org.my.drivexcel.ui.utils.nav.windowSizeClassPreviewProvider
+import org.my.drivexcel.ui.utils.nav.phoneWindowSizeClassPreviewProvider
 
 @Composable
 fun LeaderUserListItemComponent(
@@ -132,7 +132,7 @@ private fun DefaultPreviewItem() = LeaderUserListItemComponent(
 private fun PreviewNight() = DriveXcelAppTheme(
     darkTheme = true,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     DefaultPreviewItem()
@@ -143,7 +143,7 @@ private fun PreviewNight() = DriveXcelAppTheme(
 private fun PreviewLight() = DriveXcelAppTheme(
     darkTheme = false,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     DefaultPreviewItem()

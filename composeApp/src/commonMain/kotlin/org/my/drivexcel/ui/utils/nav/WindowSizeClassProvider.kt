@@ -41,4 +41,5 @@ fun WindowWidthSizeClass.maxContentWidth(
     }
 }
 
-val windowSizeClassPreviewProvider = WindowSizeClassPreviewProvider()
+val phoneWindowSizeClassPreviewProvider = WindowSizeClassPreviewProvider()
+val desktopWindowSizeClassPreviewProvider = WindowSizeClassPreviewProvider(1280.dp, 800.dp)

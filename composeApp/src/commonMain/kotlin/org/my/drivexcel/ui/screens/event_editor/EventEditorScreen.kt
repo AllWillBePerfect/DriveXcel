@@ -47,7 +47,7 @@ import org.my.drivexcel.v4.ui.components.InfoMessageComponent
 import org.my.drivexcel.ui.models.UiIcon
 import org.my.drivexcel.ui.models.UiText
 import org.my.drivexcel.ui.screens.event_editor.components.EventEditorImageComponent
-import org.my.drivexcel.ui.utils.nav.windowSizeClassPreviewProvider
+import org.my.drivexcel.ui.utils.nav.phoneWindowSizeClassPreviewProvider
 
 @Composable
 fun EventEditorRoute(
@@ -270,7 +270,7 @@ private fun CreateDefaultPreview() = EventEditorScreen(
 private fun EventEditorPreviewNightPhone() = DriveXcelAppTheme(
     darkTheme = true,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     CreateDefaultPreview()
@@ -281,7 +281,7 @@ private fun EventEditorPreviewNightPhone() = DriveXcelAppTheme(
 private fun EventEditorPreviewLightPhone() = DriveXcelAppTheme(
     darkTheme = false,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     CreateDefaultPreview()
@@ -292,7 +292,7 @@ private fun EventEditorPreviewLightPhone() = DriveXcelAppTheme(
 private fun EventEditorPreviewNightDesktop() = DriveXcelAppTheme(
     darkTheme = true,
     myWindowSizeClass = desktopWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     CreateDefaultPreview()
@@ -303,7 +303,7 @@ private fun EventEditorPreviewNightDesktop() = DriveXcelAppTheme(
 private fun EventEditorPreviewLightDesktop() = DriveXcelAppTheme(
     darkTheme = false,
     myWindowSizeClass = desktopWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     CreateDefaultPreview()

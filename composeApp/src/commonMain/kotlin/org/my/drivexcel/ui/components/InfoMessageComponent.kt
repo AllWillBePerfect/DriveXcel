@@ -24,7 +24,7 @@ import org.my.drivexcel.platform.phoneWindowSizeClassPreview
 import org.my.drivexcel.ui.theme.DriveXcelAppTheme
 import org.my.drivexcel.ui.models.UiIcon
 import org.my.drivexcel.ui.models.UiText
-import org.my.drivexcel.ui.utils.nav.windowSizeClassPreviewProvider
+import org.my.drivexcel.ui.utils.nav.phoneWindowSizeClassPreviewProvider
 
 @Composable
 fun InfoMessageComponent(
@@ -93,7 +93,7 @@ fun InfoMessageComponent(
 private fun PreviewNight() = DriveXcelAppTheme(
     darkTheme = true,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     InfoMessageComponent(
@@ -107,7 +107,7 @@ private fun PreviewNight() = DriveXcelAppTheme(
 private fun PreviewLight() = DriveXcelAppTheme(
     darkTheme = false,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 
 ) {

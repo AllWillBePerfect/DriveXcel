@@ -30,7 +30,7 @@ import org.my.drivexcel.ui.screens.event_editor.EventEditingAction
 import org.my.drivexcel.ui.screens.event_editor.EventEditorUiState
 import org.my.drivexcel.ui.screens.event_editor.ImageBytes
 import org.my.drivexcel.ui.utils.createGradientImageByteArray
-import org.my.drivexcel.ui.utils.nav.windowSizeClassPreviewProvider
+import org.my.drivexcel.ui.utils.nav.phoneWindowSizeClassPreviewProvider
 
 
 @Composable
@@ -99,7 +99,7 @@ private fun defaultPreview(bytes: ByteArray? = null) = EventEditorImageComponent
 private fun PreviewImageNight() = DriveXcelAppTheme(
     darkTheme = true,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 
 ) {
@@ -113,7 +113,7 @@ private fun PreviewImageNight() = DriveXcelAppTheme(
 private fun PreviewImageLight() = DriveXcelAppTheme(
     darkTheme = false,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     defaultPreview(
@@ -126,7 +126,7 @@ private fun PreviewImageLight() = DriveXcelAppTheme(
 private fun PreviewEmptyNight() = DriveXcelAppTheme(
     darkTheme = true,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 
 ) {
@@ -138,7 +138,7 @@ private fun PreviewEmptyNight() = DriveXcelAppTheme(
 private fun PreviewEmptyLight() = DriveXcelAppTheme(
     darkTheme = false,
     myWindowSizeClass = phoneWindowSizeClassPreview,
-    windowSizeClassProvider = windowSizeClassPreviewProvider
+    windowSizeClassProvider = phoneWindowSizeClassPreviewProvider
 
 ) {
     defaultPreview()

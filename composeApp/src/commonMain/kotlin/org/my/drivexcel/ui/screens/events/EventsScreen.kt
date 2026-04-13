@@ -1,12 +1,14 @@
 package org.my.drivexcel.ui.screens.events
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.AddChart
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -25,7 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.my.drivexcel.ui.components.AlertDialogComponent
+import org.my.drivexcel.ui.models.UiIcon
+import org.my.drivexcel.ui.models.UiText
 import org.my.drivexcel.ui.screens.events.components.EventListItemComponent
+import org.my.drivexcel.v4.ui.components.InfoMessageComponent
 
 @Composable
 fun EventsRoute(
@@ -99,29 +104,32 @@ private fun EventsWrapper(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {
-                        onAction(EventsUIAction.CreateEvent)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.AddChart,
-                            contentDescription = null
-                        )
-                    }
+                        IconButton(onClick = {
+                            onAction(EventsUIAction.CreateEvent)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.AddChart,
+                                contentDescription = null
+                            )
+                        }
+
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        onAction(EventsUIAction.OnEditingClicked)
-                    }) {
-                        if (!uiState.isEditingMode) {
-                            Icon(
-                                imageVector = Icons.Default.EditNote,
-                                contentDescription = null
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = null
-                            )
+                    if (uiState.events.isNotEmpty()) {
+                        IconButton(onClick = {
+                            onAction(EventsUIAction.OnEditingClicked)
+                        }) {
+                            if (!uiState.isEditingMode) {
+                                Icon(
+                                    imageVector = Icons.Default.EditNote,
+                                    contentDescription = null
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = null
+                                )
+                            }
                         }
                     }
                 }
@@ -138,24 +146,33 @@ private fun EventsContent(
     uiState: EventsUIState,
     onAction: (EventsUIAction) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .padding(top = innerPadding.calculateTopPadding())
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(bottom = 16.dp)
-    ) {
-        items(
-            items = uiState.events,
-            key = { it.id }
-        ) { item ->
-            EventListItemComponent(
-                modifier = Modifier.animateItem(),
-                eventId = item.id,
-                byteArray = item.byteArray,
-                eventName = item.name,
-                isEditingMode = uiState.isEditingMode,
-                onAction = onAction
+    if (!uiState.initEmptyList) {
+        LazyColumn(
+            modifier = Modifier
+                .padding(top = innerPadding.calculateTopPadding())
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            items(
+                items = uiState.events,
+                key = { it.id }
+            ) { item ->
+                EventListItemComponent(
+                    modifier = Modifier.animateItem(),
+                    eventId = item.id,
+                    byteArray = item.byteArray,
+                    eventName = item.name,
+                    isEditingMode = uiState.isEditingMode,
+                    onAction = onAction
+                )
+            }
+        }
+    } else {
+        Box(Modifier.padding(innerPadding)) {
+            InfoMessageComponent(
+                icon = UiIcon.Vector(Icons.AutoMirrored.Default.ListAlt),
+                text = UiText.Text("Список пустой. Добавьте мероприятие")
             )
         }
     }

@@ -38,7 +38,7 @@ class EventsViewModel(
         viewModelScope.launch {
             observeEventsUseCase(Unit).collect { events ->
                 _uiState.update {
-                    it.copy(events = events)
+                    it.copy(events = events, initEmptyList = events.isEmpty())
                 }
             }
         }
@@ -107,6 +107,7 @@ class EventsViewModel(
 data class EventsUIState(
     val isLoading: Boolean = false,
     val events: List<EventDomainModel> = listOf(),
+    val initEmptyList: Boolean = false,
     val isDeleteDialogVisible: Boolean = false,
     val eventIdToDelete: String? = null,
     val isEditingMode: Boolean = false

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.my.drivexcel.base.domain.model.NightModeModel
+import org.my.drivexcel.ui.components.AlertDialogComponent
 import org.my.drivexcel.ui.components.CenteredContainerComponent
 
 @Composable
@@ -55,6 +56,16 @@ fun SettingsRoute(
         uiState = uiState,
         onAction = viewModel::onAction
     )
+
+    if (uiState.isUnauthorizeDialogEnabled) {
+        AlertDialogComponent(
+            onDismissRequest = { viewModel.onAction(SettingsUiAction.CloseUnauthorizedDialog) },
+            onConfirmation = { viewModel.onAction(SettingsUiAction.UnauthorizeUser)  },
+            dialogTitle = "Подтвердите действие",
+            dialogText = "Перейти на начальный экран?",
+            icon = Icons.AutoMirrored.Filled.Logout
+        )
+    }
 }
 
 @Composable
@@ -127,7 +138,7 @@ private fun SettingsContent(
 
                     SectionItemWithIcon(
                         item = "Exit",
-                        onClick = { onAction(SettingsUiAction.UnauthorizeUser) },
+                        onClick = { onAction(SettingsUiAction.ShowUnauthorizedDialog) },
                         title = { "Перейти на начальный экран" },
                         icon = {
                             Icon(
@@ -280,93 +291,3 @@ private fun <T> SectionSwitchItem(
     }
 }
 
-/*private fun LazyListScope.settingsSection(
-    title: String,
-    items: List<@Composable (Modifier) -> Unit>
-) {
-    item {
-        Text(text = title)
-    }
-
-    itemsIndexed(items) { index, itemContent ->
-
-        val position = when {
-            items.size == 1 -> SectionItemPosition.SINGLE
-            index == 0 -> SectionItemPosition.TOP
-            index == items.lastIndex -> SectionItemPosition.BOTTOM
-            else -> SectionItemPosition.MIDDLE
-        }
-
-        SectionItem(position) { modifier ->
-            itemContent(modifier)
-        }
-    }
-}
-
-@Composable
-private fun SectionItem(
-    position: SectionItemPosition,
-    content: @Composable (Modifier) -> Unit
-) {
-    val shape = when (position) {
-        SectionItemPosition.SINGLE -> RoundedCornerShape(12.dp)
-        SectionItemPosition.TOP -> RoundedCornerShape(12.dp, 12.dp, 0.dp, 0.dp)
-        SectionItemPosition.MIDDLE -> RoundedCornerShape(0.dp)
-        SectionItemPosition.BOTTOM -> RoundedCornerShape(0.dp, 0.dp, 12.dp, 12.dp)
-    }
-
-    val borderColor = MaterialTheme.colorScheme.surfaceContainerHighest
-    val strokeWidth = 1.dp
-
-    content(
-        Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(
-                color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                shape = shape
-            )
-            .drawBehind {
-                val stroke = strokeWidth.toPx()
-
-                // верхняя линия
-                if (position == SectionItemPosition.TOP || position == SectionItemPosition.SINGLE) {
-                    drawLine(
-                        color = borderColor,
-                        start = Offset(0f, 0f),
-                        end = Offset(size.width, 0f),
-                        strokeWidth = stroke
-                    )
-                }
-
-                // нижняя линия
-                if (position == SectionItemPosition.BOTTOM || position == SectionItemPosition.SINGLE) {
-                    drawLine(
-                        color = borderColor,
-                        start = Offset(0f, size.height),
-                        end = Offset(size.width, size.height),
-                        strokeWidth = stroke
-                    )
-                }
-
-                // левая линия
-                drawLine(
-                    color = borderColor,
-                    start = Offset(0f, 0f),
-                    end = Offset(0f, size.height),
-                    strokeWidth = stroke
-                )
-
-                // правая линия
-                drawLine(
-                    color = borderColor,
-                    start = Offset(size.width, 0f),
-                    end = Offset(size.width, size.height),
-                    strokeWidth = stroke
-                )
-            }
-    )
-}*/
-enum class SectionItemPosition {
-    SINGLE, TOP, MIDDLE, BOTTOM
-}
