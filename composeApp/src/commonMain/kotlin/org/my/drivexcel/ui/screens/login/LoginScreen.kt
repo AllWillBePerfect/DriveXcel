@@ -18,7 +18,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -107,7 +106,7 @@ private fun LoginContent(
     uiState: LoginUiState,
     onAction: (LoginUiAction) -> Unit
 ) {
-    val items = listOf(0, 1, 2, 3)
+    val items = listOf(0, 1, 2, 3, 4)
     val visibleStates = remember { items.map { mutableStateOf(false) } }
 
     LaunchedEffect(Unit) {
@@ -188,7 +187,38 @@ private fun LoginContent(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(48.dp))
+
+            AnimatedVisibility(
+                visible = visibleStates[4].value,
+                enter = anim()
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "Или",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+
+                    )
+                    ElevatedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                        ,
+                        enabled = !uiState.clickPerformed,
+                        onClick = { onAction(LoginUiAction.AuthorizeUser) }
+                    ) {
+                        if (!uiState.clickPerformed) {
+                            Text("Использовать тестовые данные")
+                        } else {
+                            CircularProgressIndicator(strokeWidth = 2.dp)
+                        }
+                    }
+                }
+            }
+
         }
     }
 }
