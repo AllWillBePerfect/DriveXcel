@@ -29,37 +29,6 @@ class CreateEventUseCase(
     }
 }
 
-suspend inline fun <T> filesystemTransaction(
-    rollback: suspend () -> Unit,
-    block: suspend () -> T
-): T {
-
-    return try {
-        block()
-    } catch (e: Throwable) {
-        rollback()
-        throw e
-    }
-}
-
-class FileTransactionManager {
-
-    suspend inline fun <T> run(
-        rollback: suspend () -> Unit,
-        block: suspend () -> T
-    ): T {
-
-        return try {
-            block()
-        } catch (e: Throwable) {
-            rollback()
-            throw e
-        }
-    }
-}
-
-
-
 
 
 

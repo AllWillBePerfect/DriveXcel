@@ -29,5 +29,5 @@ fun SnackbarAction.toMessage() = when (this) {
     SnackbarAction.EventDeleted -> "Мероприятие удалено"
     SnackbarAction.EventUpdated -> "Мероприятие обновлено"
     SnackbarAction.LeaderUsersSaved -> "Пользователи сохранены"
-    is SnackbarAction.ExceptionAppear -> "Произошла ошибка: ${e.cause?.javaClass?.simpleName}"
+    is SnackbarAction.ExceptionAppear -> "Произошла ошибка: ${e::class.java.name}"
 }

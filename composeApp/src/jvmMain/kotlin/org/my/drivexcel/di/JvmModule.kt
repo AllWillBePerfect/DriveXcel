@@ -14,7 +14,7 @@ import org.my.drivexcel.platform.utils.MyWindowSizeClassJvm
 import org.my.drivexcel.platform.PlatformProvider
 import org.my.drivexcel.platform.utils.PlatformProviderJvm
 import org.my.drivexcel.ui.BoxDividerProviderJvm
-import org.my.drivexcel.v3.RootDirPathProviderJvm
+import v4.platform.RootDirPathProviderJvm
 import org.my.drivexcel.base.infractructure.datastore.DatastoreProvider
 import org.my.drivexcel.platform.AppLogger
 import org.my.drivexcel.platform.BackHandlerProvider
@@ -37,8 +37,6 @@ fun initKoinWithModules() = initKoin(
 val jvmModule = module {
 
 
-
-
     // Базовый консольный логгер
     single<AppLoggerJvm> { AppLoggerJvm() }
 
@@ -59,13 +57,12 @@ val jvmModule = module {
     // ui
     singleOf(::BoxDividerProviderJvm) {bind<BoxDividerProvider>()}
 
-    // v3
-    singleOf(::RootDirPathProviderJvm) {bind<RootDirPathProvider>()}
 
     //v4
     singleOf(::XlsFilePickerJvm) { bind<XlsFilePicker>() }
     singleOf(::WindowSizeClassProviderJvm) { bind<WindowSizeClassProvider>() }
     singleOf(::DatastoreProviderJvm) { bind<DatastoreProvider>() }
     singleOf(::ClipboardManagerJvm) { bind<ClipboardManager>() }
+    singleOf(::RootDirPathProviderJvm) {bind<RootDirPathProvider>()}
 
 }

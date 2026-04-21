@@ -16,11 +16,11 @@ class SaveLeaderUsersUseCase(
     private val repo: EventRepository,
     private val parser: ExcelParser,
 ) {
-    suspend operator fun invoke(id: String, xlsList: List<ByteArray>): DomainResult<Unit> =
+    suspend fun invokeFromXls(
+        id: String,
+        xlsList: List<ByteArray>
+    ): DomainResult<Unit> =
         runCatchingDomainResult {
-
-            val oldUsers = repo.getUsers(id)
-
             val parsed = xlsList.flatMap { parser.parseToDomain(it) }
 
             val uniqueUsers = parsed
@@ -29,18 +29,40 @@ class SaveLeaderUsersUseCase(
                     users.maxByOrNull { it.dateOfVisit.toComparableDate() }!!
                 }
 
-            val actions = buildHistoryActions(oldUsers, uniqueUsers)
-
-            val historyEntry = HistoryEntry(
-                id = UUID.randomUUID().toString(),
-                timestamp = System.currentTimeMillis(),
-                actions = actions
-            )
-
-            repo.saveUsers(id, uniqueUsers)
-            repo.appendHistory(id, historyEntry)
+            saveInternal(id, uniqueUsers)
         }
 
+    suspend fun invokeFromUsers(
+        id: String,
+        uniqueUsers: List<LeaderUserDomainModel>
+    ): DomainResult<Unit> =
+        runCatchingDomainResult {
+            saveInternal(id, uniqueUsers)
+        }
+
+    private suspend fun saveInternal(
+        id: String,
+        incomingUsers: List<LeaderUserDomainModel>
+    ) {
+        val oldUsers = repo.getUsers(id)
+
+        val mergedUsers = (oldUsers + incomingUsers)
+            .groupBy { it.id }
+            .map { (_, users) ->
+                users.maxByOrNull { it.dateOfVisit.toComparableDate() }!!
+            }
+
+        val actions = buildHistoryActions(oldUsers, mergedUsers)
+
+        val historyEntry = HistoryEntry(
+            id = UUID.randomUUID().toString(),
+            timestamp = System.currentTimeMillis(),
+            actions = actions
+        )
+
+        repo.saveUsers(id, mergedUsers)
+        repo.appendHistory(id, historyEntry)
+    }
     private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
     private fun String?.toComparableDate(): LocalDate {
@@ -66,15 +88,6 @@ class SaveLeaderUsersUseCase(
                 actions += HistoryAction.Add(
                     userId = id,
                     fullName = newUser.fullName
-                )
-            }
-        }
-
-        for ((id, oldUser) in oldMap) {
-            if (id !in newMap) {
-                actions += HistoryAction.Remove(
-                    userId = id,
-                    fullName = oldUser.fullName
                 )
             }
         }

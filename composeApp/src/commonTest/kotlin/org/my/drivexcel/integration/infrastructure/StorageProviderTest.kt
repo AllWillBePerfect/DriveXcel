@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.my.drivexcel.platform.RootDirPathProvider
-import org.my.drivexcel.base.infractructure.filestorage.LocalStorageProvider
+import org.my.drivexcel.infrastructure.LocalStorageProvider
 import org.my.drivexcel.base.infractructure.filestorage.StorageProvider
 import org.my.drivexcel.datasource.exception.StorageDataException.DirDoesNotExistsDataException
 import org.my.drivexcel.datasource.exception.StorageDataException.EmptyPathToDirDataException

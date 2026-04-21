@@ -12,7 +12,7 @@ import org.my.drivexcel.platform.RootDirPathProvider
 import org.my.drivexcel.domain.model.EventImageDomainModel
 import org.my.drivexcel.domain.model.ImageExtension
 import org.my.drivexcel.integration.utils.TestFileUtils.getFilesAndDirs
-import org.my.drivexcel.base.infractructure.filestorage.LocalStorageProvider
+import org.my.drivexcel.infrastructure.LocalStorageProvider
 import org.my.drivexcel.base.infractructure.filestorage.StorageProvider
 import org.my.drivexcel.data.SerializableParser
 import org.my.drivexcel.data.models.MetaDataModel

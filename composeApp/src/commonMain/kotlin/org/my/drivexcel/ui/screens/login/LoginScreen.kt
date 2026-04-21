@@ -192,6 +192,8 @@ private fun LoginContent(
             AnimatedVisibility(
                 visible = visibleStates[4].value,
                 enter = anim()
+
+
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -208,7 +210,7 @@ private fun LoginContent(
                             .fillMaxWidth()
                         ,
                         enabled = !uiState.clickPerformed,
-                        onClick = { onAction(LoginUiAction.AuthorizeUser) }
+                        onClick = { onAction(LoginUiAction.AuthorizeTestUser) }
                     ) {
                         if (!uiState.clickPerformed) {
                             Text("Использовать тестовые данные")

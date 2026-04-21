@@ -10,14 +10,19 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.my.drivexcel.base.domain.dispatcher.AppDispatchers
 import org.my.drivexcel.base.domain.model.NightModeModel
+import org.my.drivexcel.data.models.DirTypeDataModel
 
 interface PreferencesDataSource {
 
     val nightModeModelFlow: Flow<NightModeModel>
-    suspend fun switchNightMode(nightModeModel: NightModeModel)
     val userAuthorizedFlow: Flow<Boolean>
+    val dirTypeFlow: Flow<DirTypeDataModel>
+
+    suspend fun switchNightMode(nightModeModel: NightModeModel)
     suspend fun authorizeUser()
     suspend fun unauthorizeUser()
+    suspend fun setLocalDirType()
+    suspend fun setTestDirType()
 
     class Impl(
         private val dataStore: DataStore<Preferences>,
@@ -34,16 +39,25 @@ interface PreferencesDataSource {
             }
         }
 
+        override val userAuthorizedFlow: Flow<Boolean> = dataStore.data.map { preferences ->
+            preferences[USER_AUTHORIZED_KEY] ?: false
+        }
+
+        override val dirTypeFlow: Flow<DirTypeDataModel> = dataStore.data.map { preferences ->
+            try {
+                val token = preferences[DIR_TYPE_KEY] ?: DirTypeDataModel.LOCAL.name
+                DirTypeDataModel.valueOf(token)
+            } catch (e: IllegalArgumentException) {
+                DirTypeDataModel.LOCAL
+            }
+        }
+
         override suspend fun switchNightMode(nightModeModel: NightModeModel) {
             withContext(dispatchers.io) {
                 dataStore.edit { preferences ->
                     preferences[NIGHT_MODE_MODEL_KEY] = nightModeModel.name
                 }
             }
-        }
-
-        override val userAuthorizedFlow: Flow<Boolean> = dataStore.data.map { preferences ->
-            preferences[USER_AUTHORIZED_KEY] ?: false
         }
 
         override suspend fun authorizeUser() {
@@ -62,9 +76,26 @@ interface PreferencesDataSource {
             }
         }
 
+        override suspend fun setLocalDirType() {
+            withContext(dispatchers.io) {
+                dataStore.edit { preferences ->
+                    preferences[DIR_TYPE_KEY] = DirTypeDataModel.LOCAL.name
+                }
+            }
+        }
+
+        override suspend fun setTestDirType() {
+            withContext(dispatchers.io) {
+                dataStore.edit { preferences ->
+                    preferences[DIR_TYPE_KEY] = DirTypeDataModel.TEST.name
+                }
+            }
+        }
+
         companion object {
             private val NIGHT_MODE_MODEL_KEY = stringPreferencesKey("night_mode")
             private val USER_AUTHORIZED_KEY = booleanPreferencesKey("user_authorized")
+            private val DIR_TYPE_KEY = stringPreferencesKey("dir_type")
         }
     }
 

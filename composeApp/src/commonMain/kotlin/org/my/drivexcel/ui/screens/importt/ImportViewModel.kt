@@ -52,11 +52,11 @@ class ImportViewModel(
 
             ImportUiAction.OnSaveXlsClicked -> {
 
-                val eventId = currentEventId ?: return // 🔥 защита
+                val eventId = currentEventId ?: return
 
                 _uiState.update { it.copy(isSaving = true) }
                 viewModelScope.launch {
-                    saveLeaderUsersUseCase(
+                    saveLeaderUsersUseCase.invokeFromXls(
                         id = eventId,
                         xlsList = uiState.value.files.map { it.bytes }
                     )
@@ -66,8 +66,7 @@ class ImportViewModel(
                         }
                         .onFailure {
                             snackbarManager.send(SnackbarAction.ExceptionAppear(it))
-                            logger.e("ImportViewModel", it.cause.toString())
-                        }
+                            logger.e("ImportViewModel", "Error: ${it.message}", it)                        }
                     _uiState.update { it.copy(isSaving = false) }
                 }
             }

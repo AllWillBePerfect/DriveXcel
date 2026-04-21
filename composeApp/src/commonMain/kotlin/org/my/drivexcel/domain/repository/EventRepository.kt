@@ -2,13 +2,13 @@ package org.my.drivexcel.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.my.drivexcel.domain.model.EventDomainModel
-import org.my.drivexcel.domain.model.LeaderUserDomainModel
-import org.my.drivexcel.domain.parser.EventImageMapperV2
 import org.my.drivexcel.data.mappers.LeaderUserDataToDomainMapper
 import org.my.drivexcel.data.models.HistoryEntry
 import org.my.drivexcel.datasource.exception.mapper.DataExceptionToDomainMapper
 import org.my.drivexcel.datasource.sources.EventFileDataSource
+import org.my.drivexcel.domain.model.EventDomainModel
+import org.my.drivexcel.domain.model.LeaderUserDomainModel
+import org.my.drivexcel.domain.parser.EventImageMapperV2
 
 interface EventRepository {
     suspend fun getEvent(id: String): EventDomainModel
@@ -26,6 +26,8 @@ interface EventRepository {
 
     suspend fun saveUsers(id: String, users: List<LeaderUserDomainModel>)
     suspend fun appendHistory(id: String, entry: HistoryEntry)
+
+    suspend fun deleteAllEvents()
 
 
     class Impl(
@@ -111,6 +113,13 @@ interface EventRepository {
             entry: HistoryEntry
         ) {
             TODO("Not yet implemented")
+        }
+
+        override suspend fun deleteAllEvents() {
+            handleErrorCall {
+                val events = dataSource.getEvents()
+                events.forEach { dataSource.deleteEvent(it.id) }
+            }
         }
 
         private suspend fun <T> handleErrorCall(block: suspend () -> T): T {

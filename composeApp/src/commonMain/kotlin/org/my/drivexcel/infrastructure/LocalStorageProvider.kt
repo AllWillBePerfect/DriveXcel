@@ -1,7 +1,8 @@
-package org.my.drivexcel.base.infractructure.filestorage
+package org.my.drivexcel.infrastructure
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.my.drivexcel.base.infractructure.filestorage.StorageProvider
 import org.my.drivexcel.datasource.exception.StorageDataException
 import org.my.drivexcel.platform.RootDirPathProvider
 import java.io.IOException
@@ -12,16 +13,19 @@ import java.util.stream.Collectors
 import kotlin.io.path.isDirectory
 
 class LocalStorageProvider(
-    pathProvider: RootDirPathProvider
+    private val pathProvider: RootDirPathProvider
 ) : StorageProvider {
 
-    private val rootDir = pathProvider.provide()
+    private val rootDir: Path
+        get() = pathProvider.provide()
 
     init {
-        if (Files.exists(rootDir) && !Files.isDirectory(rootDir)) {
+        val dir = rootDir
+
+        if (Files.exists(dir) && !Files.isDirectory(dir)) {
             throw StorageDataException.RootPathExistsButNotADirDataException(rootDir.toString())
         }
-        runSafely { Files.createDirectories(rootDir) }
+        runSafely { Files.createDirectories(dir) }
     }
 
     override suspend fun createDirectory(relativePathToDir: String) {

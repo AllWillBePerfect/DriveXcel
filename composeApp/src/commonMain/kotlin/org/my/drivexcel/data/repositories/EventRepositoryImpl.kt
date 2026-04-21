@@ -228,6 +228,13 @@ class EventRepositoryImpl(
         )
     }
 
+    override suspend fun deleteAllEvents() {
+        safe {
+            val events = eventMetaDataSource.getAllEventIds()
+            events.forEach { eventMetaDataSource.deleteEventDir(it) }
+        }
+    }
+
     private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
     private fun String?.toComparableDate(): LocalDate {

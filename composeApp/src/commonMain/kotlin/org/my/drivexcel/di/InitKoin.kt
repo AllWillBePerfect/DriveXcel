@@ -14,7 +14,7 @@ import org.my.drivexcel.base.domain.dispatcher.AppDispatchers
 import org.my.drivexcel.platform.FolderIdProvider
 import org.my.drivexcel.platform.TimeProvider
 import org.my.drivexcel.base.infractructure.datastore.DatastoreProvider
-import org.my.drivexcel.base.infractructure.filestorage.LocalStorageProvider
+import org.my.drivexcel.infrastructure.LocalStorageProvider
 import org.my.drivexcel.base.infractructure.filestorage.StorageProvider
 import org.my.drivexcel.data.SerializableParser
 import org.my.drivexcel.data.mappers.LeaderUserDataToDomainMapper
@@ -43,6 +43,7 @@ import org.my.drivexcel.ui.screens.event_editor.EventEditorViewModel
 import org.my.drivexcel.ui.screens.events.EventsViewModel
 import org.my.drivexcel.ui.screens.home.HomeViewModel
 import org.my.drivexcel.ui.screens.importt.ImportViewModel
+import org.my.drivexcel.domain.demo.EventDemoDataGenerator
 import org.my.drivexcel.ui.screens.login.LoginViewModel
 import org.my.drivexcel.ui.screens.settings.SettingsViewModel
 import org.my.drivexcel.ui.screens.users.UsersViewModel
@@ -133,6 +134,8 @@ val dataModule = module {
     singleOf(::ExcelParserImpl) { bind<ExcelParser>() }
 
     singleOf(AppDispatchers::Impl) { bind<AppDispatchers>() }
+
+    singleOf(::EventDemoDataGenerator)
 
 
 }
