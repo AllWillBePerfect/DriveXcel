@@ -3,11 +3,11 @@
 Приложение что работает с Excel таблицами для отметки пользователей на мероприятия
 
 <div>
-<img src="docs/desktop_login.png.png" width="48%" />
-<img src="docs/desktop_main.png.png" width="48%" />
-<img src="docs/desktop_settings.png.png" width="48%" />
-<img src="docs/desktop_create.png.png.png" width="48%" />
-<img src="docs/desktop_load.png.png.png" width="48%" />
+<img src="docs/desktop_login.png" width="48%" />
+<img src="docs/desktop_main.png" width="48%" />
+<img src="docs/desktop_settings.png" width="48%" />
+<img src="docs/desktop_create.png" width="48%" />
+<img src="docs/desktop_load.png" width="48%" />
 </div>
 
 ## Идея создания
