@@ -30,7 +30,7 @@ fun main() {
             title = "DriveXcel",
             state = rememberWindowState(
                 size = DpSize(
-                    width = 400.dp,
+                    width = 1280.dp,
                     height = 800.dp
                 )
             ),
