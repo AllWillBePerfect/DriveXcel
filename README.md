@@ -11,6 +11,7 @@
 </div>
 
 ![Show](docs/video/desktop.gif)
+![Show](docs/video/mobile.gif)
 
 ## Идея создания
 
