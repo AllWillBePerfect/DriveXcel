@@ -1,4 +1,4 @@
-package org.my.drivexcel.mock.unit.domain.usecase
+package org.my.drivexcel
 
 import org.junit.Before
 import org.junit.runner.RunWith
