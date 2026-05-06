@@ -36,9 +36,9 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.android)
 
-            implementation("androidx.window:window:1.5.0") // или новее
+            implementation(libs.androidx.window)
 
-            implementation("io.ktor:ktor-client-okhttp:3.3.2")
+            implementation(libs.ktor.client.okhttp)
 
         }
 
@@ -46,8 +46,8 @@ kotlin {
         }
 
         androidInstrumentedTest.dependencies {
-            implementation("androidx.compose.ui:ui-test-junit4-android:1.10.5")
-            implementation("androidx.compose.ui:ui-test-manifest:1.10.5")
+            implementation(libs.androidx.ui.test.junit4.android)
+            implementation(libs.androidx.ui.test.manifest)
         }
 
         commonMain.dependencies {
@@ -60,74 +60,61 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.navigation.compose)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-            // Kotlinx serialization
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-
-//            implementation("androidx.compose.material3:material3:1.4.0")
-
-            // В зависимостях (например, в модуле, который распространяется на общую / UI часть)
-            implementation("org.jetbrains.compose.material3:material3:1.9.0")
-
-            implementation("org.apache.poi:poi:5.4.1")        // для .xls
-            implementation("org.apache.poi:poi-ooxml:5.4.1")  // для .xlsx
-            implementation("org.apache.commons:commons-collections4:4.5.0") // иногда нужна для POI
-
-            implementation("io.coil-kt.coil3:coil-compose:3.3.0")
-            implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
-
-            // Ktor client
-            implementation("io.ktor:ktor-client-core:3.3.2")
-            implementation("io.ktor:ktor-client-websockets:3.3.2")
-            implementation("io.ktor:ktor-client-okhttp:3.3.2")
-
-            implementation("io.ktor:ktor-server-core:3.3.2")
-            implementation("io.ktor:ktor-server-cio:3.3.2")
-            implementation("io.ktor:ktor-server-websockets:3.3.2")
-            implementation("io.ktor:ktor-server-content-negotiation:3.3.2")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.2")
+            implementation(libs.kotlinx.serialization.json)
 
 
-            // For serialization if you use JSON messages
-            implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0")
-            implementation("io.ktor:ktor-client-content-negotiation:3.3.2")
+            implementation(libs.material3)
+
+            implementation(libs.poi)
+            implementation(libs.poi.ooxml)
+            implementation(libs.commons.collections4)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil3.coil.network.okhttp)
+
+            implementation(libs.io.ktor.ktor.client.core)
+            implementation(libs.io.ktor.ktor.client.websockets)
+            implementation(libs.ktor.client.okhttp)
+
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.cio)
+            implementation(libs.ktor.server.websockets)
+            implementation(libs.ktor.server.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
 
 
-            implementation("org.jmdns:jmdns:3.5.8")
+            implementation(libs.io.ktor.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.content.negotiation)
+
+
+            implementation(libs.jmdns)
 
             implementation(compose.materialIconsExtended)
 
-            implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.2.0")
-            implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.9.0")
-            implementation("org.jetbrains.compose.material3:material3-window-size-class:1.9.0")
+            implementation(libs.adaptive)
+            implementation(libs.material3.adaptive.navigation.suite)
+            implementation(libs.material3.window.size.class1)
 
-            implementation("androidx.datastore:datastore-preferences:1.2.1")
-            implementation("androidx.datastore:datastore-core:1.2.1")
+            implementation(libs.androidx.datastore.preferences.v121)
+            implementation(libs.androidx.datastore.core.v121)
 
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.koin.test)
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+            implementation(libs.kotlinx.coroutines.test)
 
-            // Required -- JUnit 4 framework
-//    testImplementation("junit:junit:${jUnitVersion}")
-// Optional -- Robolectric environment
-//            implementation("androidx.test:core:1.7.0")
-// Optional -- Mockito framework
-            implementation("org.mockito:mockito-core:5.21.0")
-// Optional -- mockito-kotlin
-            implementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
-// Optional -- Mockk framework
-            implementation("io.mockk:mockk:1.14.9")
+            implementation(libs.mockito.core)
+            implementation(libs.mockito.kotlin)
+            implementation(libs.mockk)
 
-            implementation("app.cash.turbine:turbine:1.2.1")
+            implementation(libs.turbine)
 
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.uiTest)
@@ -140,8 +127,8 @@ kotlin {
 
             implementation(libs.koin.core)
 
-            implementation("io.ktor:ktor-client-java:3.3.2")
-            implementation("io.ktor:ktor-client-cio:3.3.2")
+            implementation(libs.ktor.client.java)
+            implementation(libs.ktor.client.cio)
 
         }
 
@@ -185,10 +172,6 @@ android {
 dependencies {
     testImplementation(libs.junit.junit)
     debugImplementation(compose.uiTooling)
-
-    //    androidTestImplementation("androidx.compose.ui:ui-test-junit4-android:1.10.5")
-    //    debugImplementation("androidx.compose.ui:ui-test-manifest:1.10.5")
-
 }
 
 compose.desktop {
